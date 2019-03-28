@@ -14,6 +14,7 @@
 
 int ipcid; //inter proccess shared memory
 Shared* data; //shared memory data
+char* filen; //name of this executable
 
 
 /* Create prototypes for used functions*/
@@ -103,6 +104,8 @@ int setuptimer() //setup timer handling
 
 int main()
 {
+	filen = argv[0]; //shorthand for filename
+
 	if (setupinterrupt() == -1) //handler for SIGPROF failed
 	{
 		perror("Failed to setup handler for SIGPROF");
