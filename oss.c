@@ -102,7 +102,7 @@ int setuptimer() //setup timer handling
 	return (setitimer(ITIMER_PROF, &value, NULL));
 }
 
-int main()
+int main(int argc, int** argv)
 {
 	filen = argv[0]; //shorthand for filename
 
