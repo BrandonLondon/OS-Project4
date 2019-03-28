@@ -18,15 +18,15 @@ char* filen; //name of this executable
 
 
 /* Create prototypes for used functions*/
-void handler(int signal);
+void Handler(int signal);
 void DoFork(int value); 
 void ShmAttatch();
-void timerhandler(int sig);
-int setupinterrupt();
-int setuptimer();
+void TimerHandler(int sig);
+int SetupInterrupt();
+int SetupTimer();
 void DoSharedWork();
 
-void AddTime(Time time, int amount)
+void AddTime(Time* time, int amount)
 {
 	int newnano = time->ns + amount; 
 
@@ -38,7 +38,7 @@ void AddTime(Time time, int amount)
 	time->ns = newnano;
 }
 
-void handler(int signal) //handle ctrl-c and timer hit
+void Handler(int signal) //handle ctrl-c and timer hit
 {
 	printf("%s: Kill Signal Caught. Killing children and terminating...", filen);
 	fflush(stdout);
@@ -57,7 +57,7 @@ void DoFork(int value) //do fun fork stuff here. I know, very useful comment.
 
 	execv(forkarg[0], forkarg); //exec
 	printf("Exec failed! Aborting."); //all is lost. we couldn't fork. Blast.
-	handler(1);
+	Handler(1);
 }
 
 void ShmAttatch() //attach to shared memory
@@ -93,20 +93,20 @@ void ShmAttatch() //attach to shared memory
 	}
 }
 
-void timerhandler(int sig) //3 second kill timer
+void TimerHandler(int sig) //3 second kill timer
 {
-	handler(sig);
+	Handler(sig);
 }
 
-int setupinterrupt() //setup interrupt handling
+int SetupInterrupt() //setup interrupt handling
 {
 	struct sigaction act;
-	act.sa_handler = timerhandler;
+	act.sa_handler = TimerHandler;
 	act.sa_flags = 0;
 	return (sigemptyset(&act.sa_mask) || sigaction(SIGPROF, &act, NULL));
 }
 
-int setuptimer() //setup timer handling
+int SetupTimer() //setup timer handling
 {
 	struct itimerval value;
 	value.it_interval.tv_sec = 3;
@@ -119,29 +119,79 @@ void DoSharedWork()
 {
 	data->sysTime.seconds = 0;
 	data->sysTime.ns = 0;
+	Time nextExec;
+	srand(time(0)); 
 
-	printf("%i", data->sysTime.ns);
+	while (1) {
+		//printf("Parent Timer: %i %i\n", data->seconds, data->nanoseconds);
+		AddTime(&(data->sysTime), timerinc);
+
+		nextExec.seconds = data->sysTime.seconds;
+		nextExec.ns = data->sysTime.ns;
+		AddTime(&nextExec, (rand() * rand()) % 1000000000); //this works because RAND_MAX is at least 32767, whch is > 1 billion when squared
+
+/*
+		pid_t pid; //pid temp
+		int usertracker = -1; //updated by userready to the position of ready struct to be launched
+		if (activeExecs < childConcurMax && remainingExecs > 0 && userready(&usertracker) > 0)
+		{
+			pid = fork(); //the mircle of proccess creation
+
+			if (pid < 0) //...or maybe not proccess creation if this executes
+			{
+				perror("Failed to fork, exiting");
+				handler(1);
+			}
+
+			remainingExecs--; //we have less execs now since we launched successfully
+			if (pid == 0)
+			{
+				DoFork(rows[usertracker].arg, output); //do the fork thing with exec followup
+			}
+			
+			fprintf(o, "%s: PARENT: STARTING CHILD %i AT TIME SEC: %i NANO: %i\n", filen, pid, data->seconds, data->nanoseconds); //we are parent. We have made child at this time
+			rows[usertracker].flag = 1337; //set usertracker to already executed so it is ignored
+			cPids[cPidsPos] = pid; //add pid to pidlist
+			cPidsPos++; //increment pid list
+			activeExecs++; //increment active execs
+		}
+
+		if ((pid = waitpid((pid_t)-1, &status, WNOHANG)) > 0) //if a PID is returned
+		{
+			if (WIFEXITED(status))
+			{
+				//printf("\n%s: PARENT: EXIT: PID: %i, CODE: %i, SEC: %i, NANO %i", filen, pid, WEXITSTATUS(status), data->seconds, data->nanoseconds);
+				if (WEXITSTATUS(status) == 21) //21 is my custom return val
+				{
+					exitcount++;
+					activeExecs--;
+					fprintf(o, "%s: CHILD PID: %i: RIP. fun while it lasted: %i sec %i nano.\n", filen, pid, data->seconds, data->nanoseconds);
+				}
+			}
+		}
+
+		if (exitcount == childMax && remainingExecs == 0) //only get out of loop if we run out of execs or we have maxed out child count
+			break;*/
+	}
 }
 
 int main(int argc, int** argv)
 {
 	filen = argv[0]; //shorthand for filename
 
-	if (setupinterrupt() == -1) //handler for SIGPROF failed
+	if (SetupInterrupt() == -1) //Handler for SIGPROF failed
 	{
-		perror("Failed to setup handler for SIGPROF");
+		perror("Failed to setup Handler for SIGPROF");
 		return 1;
 	}
-	if (setuptimer() == -1) //timer failed
+	if (SetupTimer() == -1) //timer failed
 	{
 		perror("Failed to setup ITIMER_PROF interval timer");
 		return 1;
 	}
 
 	ShmAttatch(); //attach to shared mem
-	signal(SIGINT, handler);
-
-	while(1);
+	signal(SIGINT, Handler);
 
 	return 0;
 }
