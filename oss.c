@@ -24,6 +24,19 @@ void ShmAttatch();
 void timerhandler(int sig);
 int setupinterrupt();
 int setuptimer();
+void DoSharedWork();
+
+void AddTime(Time time, int amount)
+{
+	int newnano = time->ns + amount; 
+
+	while (newnano >= 1000000000) //nano = 10^9, so keep dividing until we get to something less and increment seconds
+	{
+		newnano -= 1000000000;
+		(time->seconds)++;
+	}
+	time->ns = newnano;
+}
 
 void handler(int signal) //handle ctrl-c and timer hit
 {
@@ -102,6 +115,14 @@ int setuptimer() //setup timer handling
 	return (setitimer(ITIMER_PROF, &value, NULL));
 }
 
+void DoSharedWork()
+{
+	data->sysTime.seconds = 0;
+	data->sysTime.ns = 0;
+
+	printf("%i", data->sysTime.ns);
+}
+
 int main(int argc, int** argv)
 {
 	filen = argv[0]; //shorthand for filename
@@ -120,7 +141,7 @@ int main(int argc, int** argv)
 	ShmAttatch(); //attach to shared mem
 	signal(SIGINT, handler);
 
-	while(true);
+	while(1);
 
 	return 0;
 }
