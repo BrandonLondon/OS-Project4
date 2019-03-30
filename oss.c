@@ -281,7 +281,7 @@ void QueueAttatch()
 		return;
 	}
 
-    queue = msgget(key_t shmkey, 0600 | IPC_CREAT);
+    queue = msgget(shmkey, 0600 | IPC_CREAT);
 
     if(queue == -1)
     {

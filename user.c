@@ -3,12 +3,15 @@
 #include <sys/msg.h>
 #include <sys/types.h>
 #include <sys/ipc.h>
+#include "shared.h"
 
 const int CHANCE_TO_DIE_PERCENT = 10;
 const int CHANCE_TO_USE_ALL_TIME_PERCENT = 60;
 
 Shared* data;
 int queue;
+int ipcid;
+char* filen;
 
 void ShmAttatch();
 void QueueAttatch();
@@ -25,7 +28,7 @@ void QueueAttatch()
 		return;
 	}
 
-    queue = msgget(key_t shmkey, 0600 | IPC_CREAT);
+    queue = msgget(shmkey, 0600 | IPC_CREAT);
 
     if(queue == -1)
     {
@@ -75,7 +78,7 @@ int main(int argc, int argv)
     QueueAttatch();
     
     srand(time(NULL));
-    printf("IM ALIVE!..but not for long");
+    //printf("IM ALIVE!..but not for long");
 
     if((rand() % 100) <= CHANCE_TO_DIE_PERCENT)
         exit(21);
