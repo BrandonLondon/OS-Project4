@@ -11,9 +11,11 @@
 #include <sys/time.h>
 #include "string.h"
 #include <sys/types.h>
+#include <sys/msg.h>
 
 int ipcid; //inter proccess shared memory
 Shared* data; //shared memory data
+int queue;
 char* filen; //name of this executable
 const int MAX_TIME_BETWEEN_NEW_PROCS_NS = 1;
 const int MAX_TIME_BETWEEN_NEW_PROCS_SEC = 0;
@@ -35,6 +37,7 @@ void SweepProcBlocks();
 void AddTimeSpec(Time* time, int sec, int nano);
 void AddTime(Time* time, int amount);
 int FindPID(int pid);
+void QueueAttatch();
 
 void AddTime(Time* time, int amount)
 {
@@ -266,6 +269,29 @@ void DoSharedWork()
 	}
 }
 
+void QueueAttatch()
+{
+    key_t shmkey = ftok("shmsharemsg", 766); 
+
+    if (shmkey == -1) //check if the input file exists
+	{
+		printf("\n%s: ", filen);
+		fflush(stdout);
+		perror("Error: Ftok failed");
+		return;
+	}
+
+    queue = msgget(key_t shmkey, 0600 | IPC_CREAT);
+
+    if(queue == -1)
+    {
+        printf("\n%s: ", filen);
+		fflush(stdout);
+		perror("Error: queue creation failed");
+		return;
+    }
+}
+
 int main(int argc, int** argv)
 {
 	filen = argv[0]; //shorthand for filename
@@ -282,6 +308,7 @@ int main(int argc, int** argv)
 	}
 
 	ShmAttatch(); //attach to shared mem
+	QueueAttatch();
 	SweepProcBlocks();
 	signal(SIGINT, Handler);
 
