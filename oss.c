@@ -15,9 +15,12 @@
 int ipcid; //inter proccess shared memory
 Shared* data; //shared memory data
 char* filen; //name of this executable
-const int maxTimeBetweenNewProcsNS = 5000000;
-const int maxTimeBetweenNewProcsSecs = 0;
+const int MAX_TIME_BETWEEN_NEW_PROCS_NS = 1;
+const int MAX_TIME_BETWEEN_NEW_PROCS_SEC = 0;
+const int SCHEDULER_CLOCK_ADD_INC = 10;
 
+const int CHANCE_TO_BE_USER = 50;
+const int QUEUE_BASE_TIME = 10;
 
 /* Create prototypes for used functions*/
 void Handler(int signal);
@@ -160,7 +163,6 @@ void DoSharedWork()
 	int activeProcs = 0;
 	int remainingExecs = 100;
 	int exitCount = 0;
-	int timerInc = 10;
 	int status;
 
 	/* Set shared memory clock value */
@@ -175,7 +177,7 @@ void DoSharedWork()
 	srand(time(0)); 
 
 	while (1) {
-		AddTime(&(data->sysTime), timerInc);
+		AddTime(&(data->sysTime), SCHEDULER_CLOCK_ADD_INC);
 
 		pid_t pid; //pid temp
 		int usertracker = -1; //updated by userready to the position of ready struct to be launched
@@ -203,8 +205,8 @@ void DoSharedWork()
 			nextExec.ns = data->sysTime.ns;
 			printf("Current: %i %i\n\n", nextExec.seconds, nextExec.ns);
 
-			int secstoadd = abs(rand() % (maxTimeBetweenNewProcsSecs + 1));
-			int nstoadd = abs((rand() * rand()) % (maxTimeBetweenNewProcsNS + 1));
+			int secstoadd = abs(rand() % (MAX_TIME_BETWEEN_NEW_PROCS_SEC + 1));
+			int nstoadd = abs((rand() * rand()) % (MAX_TIME_BETWEEN_NEW_PROCS_NS + 1));
 			printf("Adding: %i %i\n\n", secstoadd, nstoadd);
 			AddTimeSpec(&nextExec, secstoadd, nstoadd);
 			printf("After: %i %i\n\n", nextExec.seconds, nextExec.ns);
@@ -219,7 +221,7 @@ void DoSharedWork()
 			{
 				data->proc[pos].pid = pid;
 
-				int userRoll = (rand() % 100 < 25) ? 1 : 0;
+				int userRoll = ((rand() % 100) < CHANCE_TO_BE_USER) ? 1 : 0;
 				data->proc[pos].priority = userRoll;
 
 				data->proc[pos].tCpuTime.seconds = 0;
