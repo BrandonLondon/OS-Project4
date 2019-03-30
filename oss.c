@@ -207,7 +207,8 @@ void DoSharedWork()
 			nextExec.seconds = data->sysTime.seconds;
 			nextExec.ns = data->sysTime.ns;
 			printf("Current: %i %i\n\n", nextExec.seconds, nextExec.ns);
-			long tobeadded = ((long)rand() * (long)1000000000 * (long)(maxTimeBetweenNewProcsSecs + 1)) % ((long)(maxTimeBetweenNewProcsSecs * (long)1000000000) + (long)maxTimeBetweenNewProcsNS);
+			long tobeadded = (long)((rand() * 1000000000) / ((maxTimeBetweenNewProcsSecs * 1000000000) + maxTimeBetweenNewProcsNS);
+			printf("to be added: %i\n\n", tobeadded);
 			AddTimeLong(&nextExec, tobeadded);
 			printf("After: %i %i\n\n", nextExec.seconds, nextExec.ns);
 
@@ -252,7 +253,7 @@ void DoSharedWork()
 					exitCount++;
 					activeProcs--;
 
-					int position =  FindPID(pid);
+					int position = FindPID(pid);
 					if(position > -1)
 						data->proc[position].pid = -1;
 
