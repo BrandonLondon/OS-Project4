@@ -121,11 +121,10 @@ int main(int argc, int argv)
 
 	printf("IM ALIVE!..but not for long %i\n", getpid());
 
-	srand(time(NULL));
+	srand(time(NULL) ^ (getpid()<<16));
 	if ((rand() % 100) <= CHANCE_TO_DIE_PERCENT)
 		exit(21);
 
-	srand(time(NULL));
 	if ((rand() % 100) <= CHANCE_TO_USE_ALL_TIME_PERCENT)
 	{
 		//signal OSS all time used
@@ -140,15 +139,12 @@ int main(int argc, int argv)
 		unblockTime.ns = data->sysTime.ns;
 
 		printf("THIS LINE EXECUTES!!! \n\n\n");
-		srand(time(NULL));
 		int secstoadd = rand() % 6;
-		srand(time(NULL));
 		int mstoadd = (rand() % 1001) * 1000000;
 
 		AddTimeSpec(&unblockTime, secstoadd, mstoadd); //set unblock time to some value seconds value 0-5 and 0-1000ms but converted to ns to make my life easier
 
 		printf("Added %i:%i", secstoadd, mstoadd);
-		fflush(stdout);
 		while ((data->sysTime.seconds >= unblockTime.seconds) && (data->sysTime.ns >= unblockTime.ns)) {
 			printf("\n\nSPIN LOCKED\n\n");
 		}
