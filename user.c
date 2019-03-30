@@ -150,7 +150,6 @@ int main(int argc, int argv)
 				//printf("Spinlocking...\n\n");
 			}
 		}
-		printf("POST SPINLOCK\n\n");
 		//wait on some task and block
 		exit(21);
 	}
