@@ -162,7 +162,7 @@ void DoSharedWork()
 			if (pid < 0) //...or maybe not proccess creation if this executes
 			{
 				perror("Failed to fork, exiting");
-				handler(1);
+				Handler(1);
 			}
 
 			remainingExecs--; //we have less execs now since we launched successfully
