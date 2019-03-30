@@ -284,8 +284,8 @@ void DoSharedWork()
 			break;
 	}
 
-	shmctl(ipcid, IPC_RMID, NULL);
-	msgctl(queue, IPC_RMID, NULL);
+	//shmctl(ipcid, IPC_RMID, NULL);
+	//msgctl(queue, IPC_RMID, NULL);
 }
 
 void QueueAttatch()
