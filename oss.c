@@ -242,5 +242,7 @@ int main(int argc, int** argv)
 	ShmAttatch(); //attach to shared mem
 	signal(SIGINT, Handler);
 
+	DoSharedWork();
+
 	return 0;
 }
