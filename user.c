@@ -130,7 +130,7 @@ int main(int argc, int argv)
 
 		AddTimeSpec(&unblockTime, (rand() % 6), (rand() % 1001) * 1000000); //set unblock time to some value seconds value 0-5 and 0-1000ms but converted to ns to make my life easier
 
-		while((data->sysTime.seconds >= unblockTime.seconds) && (data->sysTime.ns >= unblockTime.ns)) {}
+		while((data->sysTime.seconds >= unblockTime.seconds) && (data->sysTime.ns >= unblockTime.ns)) { printf("Spinlock"); }
         //wait on some task and block
         exit(21);
     }
