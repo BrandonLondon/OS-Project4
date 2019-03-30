@@ -138,13 +138,11 @@ int main(int argc, int argv)
 		unblockTime.seconds = data->sysTime.seconds;
 		unblockTime.ns = data->sysTime.ns;
 
-		printf("THIS LINE EXECUTES!!! \n\n\n");
 		int secstoadd = rand() % 6;
 		int mstoadd = (rand() % 1001) * 1000000;
 
 		AddTimeSpec(&unblockTime, secstoadd, mstoadd); //set unblock time to some value seconds value 0-5 and 0-1000ms but converted to ns to make my life easier
 
-		printf("Added %i:%i", secstoadd, mstoadd);
 		while ((data->sysTime.seconds >= unblockTime.seconds) && (data->sysTime.ns >= unblockTime.ns)) {
 			printf("\n\nSPIN LOCKED\n\n");
 		}
