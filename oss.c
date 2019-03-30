@@ -29,6 +29,8 @@ int SetupTimer();
 void DoSharedWork();
 int FindEmptyProcBlock();
 void SweepProcBlocks();
+void AddTime(Time* time, long amount);
+void AddTime(Time* time, int amount);
 
 void AddTime(Time* time, int amount)
 {
@@ -40,6 +42,18 @@ void AddTime(Time* time, int amount)
 		(time->seconds)++;
 	}
 	time->ns = newnano;
+}
+
+void AddTime(Time* time, long amount)
+{
+	long newnano = (long)(time->ns) + amount; 
+	printf("amount to be added: %i\n\n", amount);
+	while (newnano >= 1000000000) //nano = 10^9, so keep dividing until we get to something less and increment seconds
+	{
+		newnano -= 1000000000;
+		(time->seconds)++;
+	}
+	time->ns = (int)newnano;
 }
 
 void Handler(int signal) //handle ctrl-c and timer hit
@@ -185,7 +199,7 @@ void DoSharedWork()
 			nextExec.seconds = data->sysTime.seconds;
 			nextExec.ns = data->sysTime.ns;
 			printf("Current: %i %i\n\n", nextExec.seconds, nextExec.ns);
-			int tobeadded = (int)(rand() * (long)1000000000 * ((long)maxTimeBetweenNewProcsSecs + 1)) % (((long)maxTimeBetweenNewProcsSecs * (long)1000000000) + (long)maxTimeBetweenNewProcsNS);
+			long tobeadded = ((long)rand() * (long)1000000000 * (long)(maxTimeBetweenNewProcsSecs + 1)) % ((long)(maxTimeBetweenNewProcsSecs * (long)1000000000) + (long)maxTimeBetweenNewProcsNS);
 			AddTime(&nextExec, tobeadded);
 			printf("After: %i %i\n\n", nextExec.seconds, nextExec.ns);
 
