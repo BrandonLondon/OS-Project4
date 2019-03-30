@@ -69,7 +69,7 @@ void Handler(int signal) //handle ctrl-c and timer hit
 
 	int i;
 	for(i = 0; i < 19; i++)
-	    if(data->proc[i].pid != 0)
+	    if(data->proc[i].pid != -1)
 	    	kill(data->proc[i].pid, SIGTERM);
 
 	shmctl(ipcid, IPC_RMID, NULL); //free shared mem
