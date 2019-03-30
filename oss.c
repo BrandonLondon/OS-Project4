@@ -160,7 +160,7 @@ void DoSharedWork()
 	int activeProcs = 0;
 	int remainingExecs = 100;
 	int exitCount = 0;
-	int timerInc = 1000;
+	int timerInc = 10;
 	int status;
 
 	/* Set shared memory clock value */
@@ -179,7 +179,7 @@ void DoSharedWork()
 
 		pid_t pid; //pid temp
 		int usertracker = -1; //updated by userready to the position of ready struct to be launched
-		if (activeProcs < 19 && ((data->sysTime.seconds - nextExec.seconds >= 0) && (data->sysTime.ns - nextExec.ns >= 0)))
+		if (activeProcs < 19 && (data->sysTime.seconds >= nextExec.seconds) && (data->sysTime.ns >= nextExec.ns))
 		{
 			pid = fork(); //the mircle of proccess creation
 
