@@ -105,6 +105,7 @@ int main(int argc, int argv)
     }
     else
     {
+	usleep((((rand() % 6) + (rand() % 1001))*1000));
         //wait on some task and block
         exit(21);
     }
