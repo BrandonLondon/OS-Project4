@@ -178,23 +178,31 @@ void DoSharedWork()
 			nextExec.ns = data->sysTime.ns;
 			AddTime(&nextExec, (rand() * 1000000000 * (maxTimeBetweenNewProcsSecs + 1)) % ((maxTimeBetweenNewProcsSecs * 1000000000) + maxTimeBetweenNewProcsNS));
 
+			int failpoint = 0;
+
+			printf("FAIL? %i". failpoint++);
 			/* Setup child block if one exists */
 			int pos;
 			if((pos = FindEmptyProcBlock()) > -1)
 			{
+							printf("FAIL? %i". failpoint++);
 				data->proc[pos].pid = pid;
 
 				int userRoll = (rand() % 100 < 25) ? 1 : 0;
 				data->proc[pos].priority = userRoll;
+							printf("FAIL? %i". failpoint++);
 
 				data->proc[pos].tCpuTime.seconds = 0;
 				data->proc[pos].tCpuTime.ns = 0;
+							printf("FAIL? %i". failpoint++);
 
 				data->proc[pos].tSysTime.seconds = 0;
 				data->proc[pos].tSysTime.ns = 0;
+							printf("FAIL? %i". failpoint++);
 
 				data->proc[pos].tBurTime.seconds = 0;
 				data->proc[pos].tBurTime.ns = 0;
+							printf("FAIL? %i". failpoint++);
 
 				activeProcs++; //increment active execs
 			}
