@@ -67,6 +67,7 @@ void Handler(int signal) //handle ctrl-c and timer hit
 	fflush(stdout);
 
 	shmctl(ipcid, IPC_RMID, NULL); //free shared mem
+	msgctl(queue, IPC_RMID, NULL); 
 
 	kill(getpid(), SIGTERM); //kill self
 }
@@ -274,6 +275,9 @@ void DoSharedWork()
 		if (remainingExecs <= 0 && exitCount >= 100) //only get out of loop if we run out of execs or we have maxed out child count
 			break;
 	}
+
+	shmctl(ipcid, IPC_RMID, NULL);
+	msgctl(queue, IPC_RMID, NULL); 
 }
 
 void QueueAttatch()
@@ -318,7 +322,6 @@ int main(int argc, int** argv)
 	QueueAttatch();
 	SweepProcBlocks();
 	signal(SIGINT, Handler);
-
 	DoSharedWork();
 
 	return 0;
