@@ -66,6 +66,11 @@ void Handler(int signal) //handle ctrl-c and timer hit
 	printf("%s: Kill Signal Caught. Killing children and terminating...", filen);
 	fflush(stdout);
 
+	int i;
+	for(i = 0; i < 19; i++)
+	    if(data->proc[i].pid != 0)
+	    	kill(data->proc[i].pid, SIGTERM);
+
 	shmctl(ipcid, IPC_RMID, NULL); //free shared mem
 	msgctl(queue, IPC_RMID, NULL);
 
