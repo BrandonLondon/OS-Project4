@@ -15,6 +15,8 @@
 int ipcid; //inter proccess shared memory
 Shared* data; //shared memory data
 char* filen; //name of this executable
+const int maxTimeBetweenNewProcsNS = 5000000;
+const int maxTimeBetweenNewProcsSecs = 1;
 
 
 /* Create prototypes for used functions*/
@@ -115,25 +117,41 @@ int SetupTimer() //setup timer handling
 	return (setitimer(ITIMER_PROF, &value, NULL));
 }
 
+int FindEmptyProcBlock()
+{
+	int i;
+	for(i = 0; i < 19; i++)
+	{
+		if(data->proc[i].pid == -1)
+			return i; //return proccess table position of empty
+	}
+
+	return -1; //error: no proccess slot available
+}
+
 void DoSharedWork()
 {
+	int activeProcs = 0;
+	int remainingExecs = 100;
+	int exitCount = 0;
+
+	/* Set shared memory clock value */
 	data->sysTime.seconds = 0;
 	data->sysTime.ns = 0;
+
+	/* Setup time for random child spawning */
 	Time nextExec;
+	nextExec.seconds = 0;
+	nextExec.ns = 0;
+
 	srand(time(0)); 
 
 	while (1) {
-		//printf("Parent Timer: %i %i\n", data->seconds, data->nanoseconds);
 		AddTime(&(data->sysTime), timerinc);
 
-		nextExec.seconds = data->sysTime.seconds;
-		nextExec.ns = data->sysTime.ns;
-		AddTime(&nextExec, (rand() * rand()) % 1000000000); //this works because RAND_MAX is at least 32767, whch is > 1 billion when squared
-
-/*
 		pid_t pid; //pid temp
 		int usertracker = -1; //updated by userready to the position of ready struct to be launched
-		if (activeExecs < childConcurMax && remainingExecs > 0 && userready(&usertracker) > 0)
+		if (activeProcs < 19 && (data->sysTime.seconds > nextExec.seconds && data->sysTime.ns > nextExec.ns))
 		{
 			pid = fork(); //the mircle of proccess creation
 
@@ -149,11 +167,37 @@ void DoSharedWork()
 				DoFork(rows[usertracker].arg, output); //do the fork thing with exec followup
 			}
 			
-			fprintf(o, "%s: PARENT: STARTING CHILD %i AT TIME SEC: %i NANO: %i\n", filen, pid, data->seconds, data->nanoseconds); //we are parent. We have made child at this time
-			rows[usertracker].flag = 1337; //set usertracker to already executed so it is ignored
-			cPids[cPidsPos] = pid; //add pid to pidlist
-			cPidsPos++; //increment pid list
-			activeExecs++; //increment active execs
+			fprintf("%s: PARENT: STARTING CHILD %i AT TIME SEC: %i NANO: %i\n", filen, pid, data->sysTime.seconds, data->sysTime.ns); //we are parent. We have made child at this time
+
+			/* Setup the next exec for proccess*/
+			nextExec.seconds = data->sysTime.seconds;
+			nextExec.ns = data->sysTime.ns;
+			AddTime(&nextExec, (pow(rand(), rand())) % ((maxTimeBetweenNewProcsSecs * 1000000000) + maxTimeBetweenNewProcsNS));
+
+			/* Setup child block if one exists */
+			if((int pos = FindEmptyProcBlock()) > -1)
+			{
+				data->proc[pos].pid = pid;
+
+				int userRoll = (rand() % 100 < 25) ? 1 : 0;
+				data->proc[pos].priority = userRoll;
+
+				data->proc[pos].tCpuTime.seconds = 0;
+				data->proc[pos].tCpuTime.ns = 0;
+
+				data->proc[pos].tSysTime.seconds = 0;
+				data->proc[pos].tSysTime.ns = 0;
+
+				data->proc[pos].tBurTime.seconds = 0;
+				data->proc[pos].tBurTime.ns = 0;
+
+				activeProcs++; //increment active execs
+			}
+			else
+			{
+				printf("%s: PARENT: CHILD FAILED TO FIND CONTROL BLOCK. TERMINATING CHILD\n\n");
+				kill(pid, SIGTERM);
+			}
 		}
 
 		if ((pid = waitpid((pid_t)-1, &status, WNOHANG)) > 0) //if a PID is returned
@@ -163,15 +207,15 @@ void DoSharedWork()
 				//printf("\n%s: PARENT: EXIT: PID: %i, CODE: %i, SEC: %i, NANO %i", filen, pid, WEXITSTATUS(status), data->seconds, data->nanoseconds);
 				if (WEXITSTATUS(status) == 21) //21 is my custom return val
 				{
-					exitcount++;
-					activeExecs--;
-					fprintf(o, "%s: CHILD PID: %i: RIP. fun while it lasted: %i sec %i nano.\n", filen, pid, data->seconds, data->nanoseconds);
+					exitCount++;
+					activeProcs--;
+					printf("%s: CHILD PID: %i: RIP. fun while it lasted: %i sec %i nano.\n", filen, pid, data->sysTime.seconds, data->sysTime.ns);
 				}
 			}
 		}
 
-		if (exitcount == childMax && remainingExecs == 0) //only get out of loop if we run out of execs or we have maxed out child count
-			break;*/
+		if (exitCount == 100 && remainingExecs == 0) //only get out of loop if we run out of execs or we have maxed out child count
+			break;
 	}
 }
 
