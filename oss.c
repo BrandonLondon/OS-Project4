@@ -31,6 +31,7 @@ int FindEmptyProcBlock();
 void SweepProcBlocks();
 void AddTimeLong(Time* time, long amount);
 void AddTime(Time* time, int amount);
+int FindPID(int pid);
 
 void AddTime(Time* time, int amount)
 {
@@ -150,6 +151,15 @@ void SweepProcBlocks()
 		data->proc[i].pid = -1;
 }
 
+int FindPID(int pid)
+{
+	int i;
+	for(i = 0; i < 19; i++)
+		if(data->proc[i].pid == pid)
+			return i;
+	return -1;
+}
+
 void DoSharedWork()
 {
 	int activeProcs = 0;
@@ -241,6 +251,11 @@ void DoSharedWork()
 				{
 					exitCount++;
 					activeProcs--;
+					
+					int position =  FindPID(pid);
+					if(position > -1)
+						data->proc[position] = -1;
+
 					printf("%s: CHILD PID: %i: RIP. fun while it lasted: %i sec %i nano.\n", filen, pid, data->sysTime.seconds, data->sysTime.ns);
 				}
 			}
