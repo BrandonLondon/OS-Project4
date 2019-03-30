@@ -181,36 +181,34 @@ void DoSharedWork()
 			printf("%s: PARENT: STARTING CHILD %i AT TIME SEC: %i NANO: %i\n", filen, pid, data->sysTime.seconds, data->sysTime.ns); //we are parent. We have made child at this time
 
 			/* Setup the next exec for proccess*/
+			printf("Before: %i %i", nextExec.seconds, nextExec.ns);
 			nextExec.seconds = data->sysTime.seconds;
 			nextExec.ns = data->sysTime.ns;
+			printf("Current: %i %i", nextExec.seconds, nextExec.ns);
 			AddTime(&nextExec, (rand() * 1000000000 * (maxTimeBetweenNewProcsSecs + 1)) % ((maxTimeBetweenNewProcsSecs * 1000000000) + maxTimeBetweenNewProcsNS));
-
+			printf("After: %i %i", nextExec.seconds, nextExec.ns);
+			
+/* Test unit block
 			int failpoint = 0;
-
 			printf("FAIL? %i\n", failpoint++);
-
+*/
 			/* Setup child block if one exists */
 			int pos = FindEmptyProcBlock();
 			if(pos > -1)
 			{
-							printf("FAIL? %i\n", failpoint++);
 				data->proc[pos].pid = pid;
 
 				int userRoll = (rand() % 100 < 25) ? 1 : 0;
 				data->proc[pos].priority = userRoll;
-							printf("FAIL? %i\n", failpoint++);
 
 				data->proc[pos].tCpuTime.seconds = 0;
 				data->proc[pos].tCpuTime.ns = 0;
-							printf("FAIL? %i\n", failpoint++);
 
 				data->proc[pos].tSysTime.seconds = 0;
 				data->proc[pos].tSysTime.ns = 0;
-							printf("FAIL? %i\n", failpoint++);
 
 				data->proc[pos].tBurTime.seconds = 0;
 				data->proc[pos].tBurTime.ns = 0;
-							printf("FAIL? %i\n", failpoint++);
 
 				activeProcs++; //increment active execs
 			}
