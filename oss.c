@@ -86,7 +86,7 @@ void DoFork(int value) //do fun fork stuff here. I know, very useful comment.
 
 void ShmAttatch() //attach to shared memory
 {
-	key_t shmkey = ftok("shmshare", 765); //shared mem key
+	key_t shmkey = ftok("shmshare", 312); //shared mem key
 
 	if (shmkey == -1) //check if the input file exists
 	{

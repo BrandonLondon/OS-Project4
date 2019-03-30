@@ -63,9 +63,9 @@ void QueueAttatch()
 	}
 }
 
-void ShmAttatch() //attach to shared memory
+void ShmAttatch() //same exact memory attach function from master minus the init for the semaphores
 {
-	key_t shmkey = ftok("shmshare", 765); //shared mem key
+	key_t shmkey = ftok("shmshare", 312); //shared mem key
 
 	if (shmkey == -1) //check if the input file exists
 	{
