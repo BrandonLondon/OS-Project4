@@ -27,6 +27,8 @@ void TimerHandler(int sig);
 int SetupInterrupt();
 int SetupTimer();
 void DoSharedWork();
+int FindEmptyProcBlock();
+
 
 void AddTime(Time* time, int amount)
 {
@@ -169,7 +171,7 @@ void DoSharedWork()
 				DoFork(pid); //do the fork thing with exec followup
 			}
 			
-			fprintf("%s: PARENT: STARTING CHILD %i AT TIME SEC: %i NANO: %i\n", filen, pid, data->sysTime.seconds, data->sysTime.ns); //we are parent. We have made child at this time
+			printf("%s: PARENT: STARTING CHILD %i AT TIME SEC: %i NANO: %i\n", filen, pid, data->sysTime.seconds, data->sysTime.ns); //we are parent. We have made child at this time
 
 			/* Setup the next exec for proccess*/
 			nextExec.seconds = data->sysTime.seconds;
