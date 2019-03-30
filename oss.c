@@ -33,7 +33,7 @@ void SweepProcBlocks();
 void AddTime(Time* time, int amount)
 {
 	int newnano = time->ns + amount; 
-
+	printf("amount to be added: %i\n\n", amount);
 	while (newnano >= 1000000000) //nano = 10^9, so keep dividing until we get to something less and increment seconds
 	{
 		newnano -= 1000000000;
