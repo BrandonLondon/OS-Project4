@@ -16,6 +16,11 @@ char* filen;
 void ShmAttatch();
 void QueueAttatch();
 
+struct msgbuf {
+   long mtype;
+   char mtext[100];
+};
+
 void QueueAttatch()
 {
     key_t shmkey = ftok("shmsharemsg", 766); 
@@ -76,9 +81,19 @@ int main(int argc, int argv)
 {
     ShmAttatch();
     QueueAttatch();
-    
+
+	int msgstatus = msgrcv(queue, &msgbuf, sizeof(msgbuf), getpid(), 0);
+
+    if (msgstatus == -1 //check if the input file exists
+	{
+		printf("\n%s: ", filen);
+		fflush(stdout);
+		perror("Error: Failed to read message queue");
+		return;
+	}
+
     srand(time(NULL));
-    //printf("IM ALIVE!..but not for long");
+    printf("IM ALIVE!..but not for long %i\n", getpid());
 
     if((rand() % 100) <= CHANCE_TO_DIE_PERCENT)
         exit(21);

@@ -39,6 +39,11 @@ void AddTime(Time* time, int amount);
 int FindPID(int pid);
 void QueueAttatch();
 
+struct msgbuf {
+   long mtype;
+   char mtext[100];
+};
+
 void AddTime(Time* time, int amount)
 {
 	int newnano = time->ns + amount; 
@@ -237,6 +242,8 @@ void DoSharedWork()
 				data->proc[pos].tBurTime.ns = 0;
 
 				activeProcs++; //increment active execs
+
+				msgsnd(queue, msgbuf, sizeof(msgbuf), pid);
 			}
 			else
 			{

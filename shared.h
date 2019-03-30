@@ -20,5 +20,10 @@ typedef struct {
     Time sysTime;
 } Shared;
 
+struct msgbuf {
+   long mtype;
+   char mtext[1];
+};
+
 #define SHARED_H
 #endif
