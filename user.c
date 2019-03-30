@@ -15,11 +15,30 @@ char* filen;
 
 void ShmAttatch();
 void QueueAttatch();
+void AddTime(Time* time, int amount);
+void AddTimeSpec(Time* time, int sec, int nano);
 
 struct {
    long mtype;
    char mtext[100];
 } msgbuf;
+
+void AddTime(Time* time, int amount)
+{
+	int newnano = time->ns + amount; 
+	while (newnano >= 1000000000) //nano = 10^9, so keep dividing until we get to something less and increment seconds
+	{
+		newnano -= 1000000000;
+		(time->seconds)++;
+	}
+	time->ns = newnano;
+}
+
+void AddTimeSpec(Time* time, int sec, int nano)
+{
+	time->seconds += sec;
+	AddTime(time, nano);
+}
 
 void QueueAttatch()
 {
@@ -105,7 +124,13 @@ int main(int argc, int argv)
     }
     else
     {
-	usleep((((rand() % 6) + (rand() % 1001))*1000));
+		Time unblockTime;
+		unblockTime.seconds = data->sysTime.seconds;
+		unblockTime.ns = data->sysTime.ns;
+
+		AddTimeSpec(&unblockTime, (rand() % 6), (rand() % 1001) * 1000000); //set unblock time to some value seconds value 0-5 and 0-1000ms but converted to ns to make my life easier
+
+		while((data->sysTime.seconds >= unblockTime.seconds) && (data->sysTime.ns >= unblockTime.ns)) {}
         //wait on some task and block
         exit(21);
     }
