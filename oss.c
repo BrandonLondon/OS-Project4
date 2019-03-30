@@ -28,7 +28,7 @@ int SetupInterrupt();
 int SetupTimer();
 void DoSharedWork();
 int FindEmptyProcBlock();
-
+void SweepProcBlocks();
 
 void AddTime(Time* time, int amount)
 {
@@ -129,6 +129,13 @@ int FindEmptyProcBlock()
 	}
 
 	return -1; //error: no proccess slot available
+}
+
+void SweepProcBlocks()
+{
+	int i;
+	for(i = 0; i < 19; i++)
+		data->proc[i].pid = -1;
 }
 
 void DoSharedWork()
@@ -249,6 +256,7 @@ int main(int argc, int** argv)
 	}
 
 	ShmAttatch(); //attach to shared mem
+	SweepProcBlocks();
 	signal(SIGINT, Handler);
 
 	DoSharedWork();
