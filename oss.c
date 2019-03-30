@@ -30,7 +30,7 @@ void DoSharedWork();
 int FindEmptyProcBlock();
 void SweepProcBlocks();
 void AddTime(Time* time, long amount);
-void AddTime(Time* time, int amount);
+void AddTimeLong(Time* time, int amount);
 
 void AddTime(Time* time, int amount)
 {
@@ -44,7 +44,7 @@ void AddTime(Time* time, int amount)
 	time->ns = newnano;
 }
 
-void AddTime(Time* time, long amount)
+void AddTimeLong(Time* time, long amount)
 {
 	long newnano = (long)(time->ns) + amount; 
 	printf("amount to be added: %i\n\n", amount);
@@ -200,7 +200,7 @@ void DoSharedWork()
 			nextExec.ns = data->sysTime.ns;
 			printf("Current: %i %i\n\n", nextExec.seconds, nextExec.ns);
 			long tobeadded = ((long)rand() * (long)1000000000 * (long)(maxTimeBetweenNewProcsSecs + 1)) % ((long)(maxTimeBetweenNewProcsSecs * (long)1000000000) + (long)maxTimeBetweenNewProcsNS);
-			AddTime(&nextExec, tobeadded);
+			AddTimeLong(&nextExec, tobeadded);
 			printf("After: %i %i\n\n", nextExec.seconds, nextExec.ns);
 
 /* Test unit block
