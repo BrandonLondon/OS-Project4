@@ -251,10 +251,10 @@ void DoSharedWork()
 				{
 					exitCount++;
 					activeProcs--;
-					
+
 					int position =  FindPID(pid);
 					if(position > -1)
-						data->proc[position] = -1;
+						data->proc[position].pid = -1;
 
 					printf("%s: CHILD PID: %i: RIP. fun while it lasted: %i sec %i nano.\n", filen, pid, data->sysTime.seconds, data->sysTime.ns);
 				}
