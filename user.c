@@ -1,9 +1,17 @@
 #include <stdio.h>
-#include <sys/time.h>
-#include <sys/msg.h>
-#include <sys/types.h>
-#include <sys/ipc.h>
+#include <unistd.h>
+#include <stdlib.h>
+#include <string.h>
+#include <sys/wait.h>
+#include <sys/ipc.h> 
+#include <sys/shm.h> 
+#include <errno.h>
 #include "shared.h"
+#include <signal.h>
+#include <sys/time.h>
+#include "string.h"
+#include <sys/types.h>
+#include <sys/msg.h>
 
 const int CHANCE_TO_DIE_PERCENT = 10;
 const int CHANCE_TO_USE_ALL_TIME_PERCENT = 30;
