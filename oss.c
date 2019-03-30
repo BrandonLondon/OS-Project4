@@ -203,8 +203,8 @@ void DoSharedWork()
 			nextExec.ns = data->sysTime.ns;
 			printf("Current: %i %i\n\n", nextExec.seconds, nextExec.ns);
 
-			int secstoadd = rand() % maxTimeBetweenNewProcsSecs;
-			int nstoadd = (rand() * rand()) % maxTimeBetweenNewProcsNS;
+			int secstoadd = abs(rand() % (maxTimeBetweenNewProcsSecs + 1));
+			int nstoadd = abs((rand() * rand()) % (maxTimeBetweenNewProcsNS + 1));
 			printf("Adding: %i %i\n\n", secstoadd, nstoadd);
 			AddTimeSpec(&nextExec, secstoadd, nstoadd);
 			printf("After: %i %i\n\n", nextExec.seconds, nextExec.ns);
