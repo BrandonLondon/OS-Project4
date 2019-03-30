@@ -134,6 +134,8 @@ void DoSharedWork()
 	int activeProcs = 0;
 	int remainingExecs = 100;
 	int exitCount = 0;
+	int timerInc = 20000;
+	int status;
 
 	/* Set shared memory clock value */
 	data->sysTime.seconds = 0;
@@ -147,7 +149,7 @@ void DoSharedWork()
 	srand(time(0)); 
 
 	while (1) {
-		AddTime(&(data->sysTime), timerinc);
+		AddTime(&(data->sysTime), timerInc);
 
 		pid_t pid; //pid temp
 		int usertracker = -1; //updated by userready to the position of ready struct to be launched
@@ -164,7 +166,7 @@ void DoSharedWork()
 			remainingExecs--; //we have less execs now since we launched successfully
 			if (pid == 0)
 			{
-				DoFork(rows[usertracker].arg, output); //do the fork thing with exec followup
+				DoFork(pid); //do the fork thing with exec followup
 			}
 			
 			fprintf("%s: PARENT: STARTING CHILD %i AT TIME SEC: %i NANO: %i\n", filen, pid, data->sysTime.seconds, data->sysTime.ns); //we are parent. We have made child at this time
@@ -172,10 +174,11 @@ void DoSharedWork()
 			/* Setup the next exec for proccess*/
 			nextExec.seconds = data->sysTime.seconds;
 			nextExec.ns = data->sysTime.ns;
-			AddTime(&nextExec, (pow(rand(), rand())) % ((maxTimeBetweenNewProcsSecs * 1000000000) + maxTimeBetweenNewProcsNS));
+			AddTime(&nextExec, (rand() * 1000000000 * (maxTimeBetweenNewProcsSecs + 1)) % ((maxTimeBetweenNewProcsSecs * 1000000000) + maxTimeBetweenNewProcsNS));
 
 			/* Setup child block if one exists */
-			if((int pos = FindEmptyProcBlock()) > -1)
+			int pos;
+			if((pos = FindEmptyProcBlock()) > -1)
 			{
 				data->proc[pos].pid = pid;
 
