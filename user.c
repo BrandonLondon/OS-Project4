@@ -19,13 +19,13 @@ void AddTime(Time* time, int amount);
 void AddTimeSpec(Time* time, int sec, int nano);
 
 struct {
-   long mtype;
-   char mtext[100];
+	long mtype;
+	char mtext[100];
 } msgbuf;
 
 void AddTime(Time* time, int amount)
 {
-	int newnano = time->ns + amount; 
+	int newnano = time->ns + amount;
 	while (newnano >= 1000000000) //nano = 10^9, so keep dividing until we get to something less and increment seconds
 	{
 		newnano -= 1000000000;
@@ -42,9 +42,9 @@ void AddTimeSpec(Time* time, int sec, int nano)
 
 void QueueAttatch()
 {
-    key_t shmkey = ftok("shmsharemsg", 766); 
+	key_t shmkey = ftok("shmsharemsg", 766);
 
-    if (shmkey == -1) //check if the input file exists
+	if (shmkey == -1) //check if the input file exists
 	{
 		printf("\n%s: ", filen);
 		fflush(stdout);
@@ -52,15 +52,15 @@ void QueueAttatch()
 		return;
 	}
 
-    queue = msgget(shmkey, 0600 | IPC_CREAT);
+	queue = msgget(shmkey, 0600 | IPC_CREAT);
 
-    if(queue == -1)
-    {
-        printf("\n%s: ", filen);
+	if (queue == -1)
+	{
+		printf("\n%s: ", filen);
 		fflush(stdout);
 		perror("Error: queue creation failed");
 		return;
-    }
+	}
 }
 
 void ShmAttatch() //attach to shared memory
@@ -98,12 +98,12 @@ void ShmAttatch() //attach to shared memory
 
 int main(int argc, int argv)
 {
-    ShmAttatch();
-    QueueAttatch();
+	ShmAttatch();
+	QueueAttatch();
 
-    int msgstatus = msgrcv(queue, &msgbuf, sizeof(msgbuf), getpid(), 0);
+	int msgstatus = msgrcv(queue, &msgbuf, sizeof(msgbuf), getpid(), 0);
 
-    if (msgstatus == -1) //check if the input file exists
+	if (msgstatus == -1) //check if the input file exists
 	{
 		printf("\n%s: ", filen);
 		fflush(stdout);
@@ -111,21 +111,21 @@ int main(int argc, int argv)
 		return;
 	}
 
-    printf("IM ALIVE!..but not for long %i\n", getpid());
+	printf("IM ALIVE!..but not for long %i\n", getpid());
 
-    srand(time(NULL));	
-    if((rand() % 100) <= CHANCE_TO_DIE_PERCENT)
-        exit(21);
-    
-    srand(time(NULL));
-    if((rand() % 100) <= CHANCE_TO_USE_ALL_TIME_PERCENT)
-    {
-        //signal OSS all time used
-        exit(21);
-    }
-    else
-    {
-		printf("USing only part...\n\n");
+	srand(time(NULL));
+	if ((rand() % 100) <= CHANCE_TO_DIE_PERCENT)
+		exit(21);
+
+	srand(time(NULL));
+	if ((rand() % 100) <= CHANCE_TO_USE_ALL_TIME_PERCENT)
+	{
+		//signal OSS all time used
+		exit(21);
+	}
+	else
+	{
+		printf("Using only part...\n\n");
 
 		Time unblockTime;
 		unblockTime.seconds = data->sysTime.seconds;
@@ -140,10 +140,11 @@ int main(int argc, int argv)
 		AddTimeSpec(&unblockTime, secstoadd, mstoadd); //set unblock time to some value seconds value 0-5 and 0-1000ms but converted to ns to make my life easier
 
 		printf("Added %i:%i", secstoadd, mstoadd);
-		while((data->sysTime.seconds >= unblockTime.seconds) && (data->sysTime.ns >= unblockTime.ns)) {
+		fflush(stdout);
+		while ((data->sysTime.seconds >= unblockTime.seconds) && (data->sysTime.ns >= unblockTime.ns)) {
 			printf("\n\nSPIN LOCKED\n\n");
 		}
-        //wait on some task and block
-        exit(21);
-    }
+		//wait on some task and block
+		exit(21);
+	}
 }

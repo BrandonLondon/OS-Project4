@@ -26,7 +26,7 @@ const int QUEUE_BASE_TIME = 10;
 
 /* Create prototypes for used functions*/
 void Handler(int signal);
-void DoFork(int value); 
+void DoFork(int value);
 void ShmAttatch();
 void TimerHandler(int sig);
 int SetupInterrupt();
@@ -39,14 +39,14 @@ void AddTime(Time* time, int amount);
 int FindPID(int pid);
 void QueueAttatch();
 
-struct{
-   long mtype;
-   char mtext[100];
+struct {
+	long mtype;
+	char mtext[100];
 } msgbuf;
 
 void AddTime(Time* time, int amount)
 {
-	int newnano = time->ns + amount; 
+	int newnano = time->ns + amount;
 	while (newnano >= 1000000000) //nano = 10^9, so keep dividing until we get to something less and increment seconds
 	{
 		newnano -= 1000000000;
@@ -67,7 +67,7 @@ void Handler(int signal) //handle ctrl-c and timer hit
 	fflush(stdout);
 
 	shmctl(ipcid, IPC_RMID, NULL); //free shared mem
-	msgctl(queue, IPC_RMID, NULL); 
+	msgctl(queue, IPC_RMID, NULL);
 
 	kill(getpid(), SIGTERM); //kill self
 }
@@ -142,9 +142,9 @@ int SetupTimer() //setup timer handling
 int FindEmptyProcBlock()
 {
 	int i;
-	for(i = 0; i < 19; i++)
+	for (i = 0; i < 19; i++)
 	{
-		if(data->proc[i].pid == -1)
+		if (data->proc[i].pid == -1)
 			return i; //return proccess table position of empty
 	}
 
@@ -154,15 +154,15 @@ int FindEmptyProcBlock()
 void SweepProcBlocks()
 {
 	int i;
-	for(i = 0; i < 19; i++)
+	for (i = 0; i < 19; i++)
 		data->proc[i].pid = -1;
 }
 
 int FindPID(int pid)
 {
 	int i;
-	for(i = 0; i < 19; i++)
-		if(data->proc[i].pid == pid)
+	for (i = 0; i < 19; i++)
+		if (data->proc[i].pid == pid)
 			return i;
 	return -1;
 }
@@ -183,7 +183,7 @@ void DoSharedWork()
 	nextExec.seconds = 0;
 	nextExec.ns = 0;
 
-	srand(time(0)); 
+	srand(time(0));
 
 	while (1) {
 		AddTime(&(data->sysTime), SCHEDULER_CLOCK_ADD_INC);
@@ -205,7 +205,7 @@ void DoSharedWork()
 			{
 				DoFork(pid); //do the fork thing with exec followup
 			}
-			
+
 			printf("%s: PARENT: STARTING CHILD %i AT TIME SEC: %i NANO: %i\n", filen, pid, data->sysTime.seconds, data->sysTime.ns); //we are parent. We have made child at this time
 
 			/* Setup the next exec for proccess*/
@@ -220,13 +220,13 @@ void DoSharedWork()
 			AddTimeSpec(&nextExec, secstoadd, nstoadd);
 			printf("After: %i %i\n\n", nextExec.seconds, nextExec.ns);
 
-/* Test unit block
-			int failpoint = 0;
-			printf("FAIL? %i\n", failpoint++);
-*/
+			/* Test unit block
+						int failpoint = 0;
+						printf("FAIL? %i\n", failpoint++);
+			*/
 			/* Setup child block if one exists */
 			int pos = FindEmptyProcBlock();
-			if(pos > -1)
+			if (pos > -1)
 			{
 				data->proc[pos].pid = pid;
 
@@ -264,7 +264,7 @@ void DoSharedWork()
 					activeProcs--;
 
 					int position = FindPID(pid);
-					if(position > -1)
+					if (position > -1)
 						data->proc[position].pid = -1;
 
 					printf("%s: CHILD PID: %i: RIP. fun while it lasted: %i sec %i nano.\n", filen, pid, data->sysTime.seconds, data->sysTime.ns);
@@ -277,14 +277,14 @@ void DoSharedWork()
 	}
 
 	shmctl(ipcid, IPC_RMID, NULL);
-	msgctl(queue, IPC_RMID, NULL); 
+	msgctl(queue, IPC_RMID, NULL);
 }
 
 void QueueAttatch()
 {
-    key_t shmkey = ftok("shmsharemsg", 766); 
+	key_t shmkey = ftok("shmsharemsg", 766);
 
-    if (shmkey == -1) //check if the input file exists
+	if (shmkey == -1) //check if the input file exists
 	{
 		printf("\n%s: ", filen);
 		fflush(stdout);
@@ -292,15 +292,15 @@ void QueueAttatch()
 		return;
 	}
 
-    queue = msgget(shmkey, 0600 | IPC_CREAT);
+	queue = msgget(shmkey, 0600 | IPC_CREAT);
 
-    if(queue == -1)
-    {
-        printf("\n%s: ", filen);
+	if (queue == -1)
+	{
+		printf("\n%s: ", filen);
 		fflush(stdout);
 		perror("Error: queue creation failed");
 		return;
-    }
+	}
 }
 
 int main(int argc, int** argv)
