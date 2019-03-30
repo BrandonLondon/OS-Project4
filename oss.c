@@ -39,10 +39,10 @@ void AddTime(Time* time, int amount);
 int FindPID(int pid);
 void QueueAttatch();
 
-struct msgbuf {
+struct{
    long mtype;
    char mtext[100];
-};
+} msgbuf;
 
 void AddTime(Time* time, int amount)
 {
@@ -243,7 +243,7 @@ void DoSharedWork()
 
 				activeProcs++; //increment active execs
 
-				msgsnd(queue, msgbuf, sizeof(msgbuf), pid);
+				msgsnd(queue, &msgbuf, sizeof(msgbuf), pid);
 			}
 			else
 			{

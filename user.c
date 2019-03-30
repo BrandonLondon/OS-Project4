@@ -16,10 +16,10 @@ char* filen;
 void ShmAttatch();
 void QueueAttatch();
 
-struct msgbuf {
+struct {
    long mtype;
    char mtext[100];
-};
+} msgbuf;
 
 void QueueAttatch()
 {
@@ -82,9 +82,9 @@ int main(int argc, int argv)
     ShmAttatch();
     QueueAttatch();
 
-	int msgstatus = msgrcv(queue, &msgbuf, sizeof(msgbuf), getpid(), 0);
+    int msgstatus = msgrcv(queue, &msgbuf, sizeof(msgbuf), getpid(), 0);
 
-    if (msgstatus == -1 //check if the input file exists
+    if (msgstatus == -1) //check if the input file exists
 	{
 		printf("\n%s: ", filen);
 		fflush(stdout);
