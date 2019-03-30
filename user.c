@@ -6,7 +6,7 @@
 #include "shared.h"
 
 const int CHANCE_TO_DIE_PERCENT = 10;
-const int CHANCE_TO_USE_ALL_TIME_PERCENT = 60;
+const int CHANCE_TO_USE_ALL_TIME_PERCENT = 30;
 
 Shared* data;
 int queue;
@@ -111,12 +111,13 @@ int main(int argc, int argv)
 		return;
 	}
 
-    srand(time(NULL));
     printf("IM ALIVE!..but not for long %i\n", getpid());
 
+    srand(time(NULL));	
     if((rand() % 100) <= CHANCE_TO_DIE_PERCENT)
         exit(21);
     
+    srand(time(NULL));
     if((rand() % 100) <= CHANCE_TO_USE_ALL_TIME_PERCENT)
     {
         //signal OSS all time used
@@ -124,13 +125,24 @@ int main(int argc, int argv)
     }
     else
     {
+		printf("USing only part...\n\n");
+
 		Time unblockTime;
 		unblockTime.seconds = data->sysTime.seconds;
 		unblockTime.ns = data->sysTime.ns;
 
-		AddTimeSpec(&unblockTime, (rand() % 6), (rand() % 1001) * 1000000); //set unblock time to some value seconds value 0-5 and 0-1000ms but converted to ns to make my life easier
+		printf("THIS LINE EXECUTES!!! \n\n\n");
+		srand(time(NULL));
+		int secstoadd = rand() % 6;
+		srand(time(NULL));
+		int mstoadd = (rand() % 1001) * 1000000;
 
-		while((data->sysTime.seconds >= unblockTime.seconds) && (data->sysTime.ns >= unblockTime.ns)) { printf("Spinlock"); }
+		AddTimeSpec(&unblockTime, secstoadd, mstoadd); //set unblock time to some value seconds value 0-5 and 0-1000ms but converted to ns to make my life easier
+
+		printf("Added %i:%i", secstoadd, mstoadd);
+		while((data->sysTime.seconds >= unblockTime.seconds) && (data->sysTime.ns >= unblockTime.ns)) {
+			printf("\n\nSPIN LOCKED\n\n");
+		}
         //wait on some task and block
         exit(21);
     }

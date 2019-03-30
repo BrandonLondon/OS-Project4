@@ -17,7 +17,7 @@ int ipcid; //inter proccess shared memory
 Shared* data; //shared memory data
 int queue;
 char* filen; //name of this executable
-const int MAX_TIME_BETWEEN_NEW_PROCS_NS = 1;
+const int MAX_TIME_BETWEEN_NEW_PROCS_NS = 150000;
 const int MAX_TIME_BETWEEN_NEW_PROCS_SEC = 0;
 const int SCHEDULER_CLOCK_ADD_INC = 10;
 
