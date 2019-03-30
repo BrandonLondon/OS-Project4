@@ -144,7 +144,7 @@ int main(int argc, int argv)
 		AddTimeSpec(&unblockTime, secstoadd, mstoadd); //set unblock time to some value seconds value 0-5 and 0-1000ms but converted to ns to make my life easier
 
 		while ((data->sysTime.seconds >= unblockTime.seconds) && (data->sysTime.ns >= unblockTime.ns)) {
-			printf("\n\nSPIN LOCKED\n\n");
+					printf("Spinlock\n\n");
 		}
 		//wait on some task and block
 		exit(21);
