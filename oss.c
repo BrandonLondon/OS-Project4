@@ -180,29 +180,30 @@ void DoSharedWork()
 
 			int failpoint = 0;
 
-			printf("FAIL? %i", failpoint++);
+			printf("FAIL? %i\n", failpoint++);
+
 			/* Setup child block if one exists */
-			int pos;
-			if((pos = FindEmptyProcBlock()) > -1)
+			int pos = FindEmptyProcBlock();
+			if(pos > -1)
 			{
-							printf("FAIL? %i", failpoint++);
+							printf("FAIL? %i\n", failpoint++);
 				data->proc[pos].pid = pid;
 
 				int userRoll = (rand() % 100 < 25) ? 1 : 0;
 				data->proc[pos].priority = userRoll;
-							printf("FAIL? %i", failpoint++);
+							printf("FAIL? %i\n", failpoint++);
 
 				data->proc[pos].tCpuTime.seconds = 0;
 				data->proc[pos].tCpuTime.ns = 0;
-							printf("FAIL? %i", failpoint++);
+							printf("FAIL? %i\n", failpoint++);
 
 				data->proc[pos].tSysTime.seconds = 0;
 				data->proc[pos].tSysTime.ns = 0;
-							printf("FAIL? %i", failpoint++);
+							printf("FAIL? %i\n", failpoint++);
 
 				data->proc[pos].tBurTime.seconds = 0;
 				data->proc[pos].tBurTime.ns = 0;
-							printf("FAIL? %i", failpoint++);
+							printf("FAIL? %i\n", failpoint++);
 
 				activeProcs++; //increment active execs
 			}
