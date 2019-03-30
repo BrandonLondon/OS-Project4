@@ -29,8 +29,8 @@ int SetupTimer();
 void DoSharedWork();
 int FindEmptyProcBlock();
 void SweepProcBlocks();
-void AddTime(Time* time, long amount);
-void AddTimeLong(Time* time, int amount);
+void AddTimeLong(Time* time, long amount);
+void AddTime(Time* time, int amount);
 
 void AddTime(Time* time, int amount)
 {
