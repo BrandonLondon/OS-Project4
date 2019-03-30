@@ -29,7 +29,7 @@ int SetupTimer();
 void DoSharedWork();
 int FindEmptyProcBlock();
 void SweepProcBlocks();
-void AddTimeLong(Time* time, long amount);
+void AddTimeSpec(Time* time, int sec, int nano);
 void AddTime(Time* time, int amount);
 int FindPID(int pid);
 
@@ -44,15 +44,10 @@ void AddTime(Time* time, int amount)
 	time->ns = newnano;
 }
 
-void AddTimeLong(Time* time, long amount)
+void AddTimeSpec(Time* time, int sec, int nano)
 {
-	long newnano = (long)(time->ns) + amount; 
-	while (newnano >= 1000000000) //nano = 10^9, so keep dividing until we get to something less and increment seconds
-	{
-		newnano -= 1000000000;
-		(time->seconds)++;
-	}
-	time->ns = (int)newnano;
+	time->seconds += sec;
+	AddTime(time, nano);
 }
 
 void Handler(int signal) //handle ctrl-c and timer hit
@@ -207,9 +202,10 @@ void DoSharedWork()
 			nextExec.seconds = data->sysTime.seconds;
 			nextExec.ns = data->sysTime.ns;
 			printf("Current: %i %i\n\n", nextExec.seconds, nextExec.ns);
-			long tobeadded = (long)(((rand() * (maxTimeBetweenNewProcsSecs * 1000000000) + maxTimeBetweenNewProcsNS)) / RAND_MAX);
-			printf("to be added: %i\n\n", tobeadded);
-			AddTimeLong(&nextExec, tobeadded);
+
+			int secstoadd = rand() % maxTimeBetweenNewProcsSecs;
+			int nstoadd = (rand() * rand()) % maxTimeBetweenNewProcsNS;
+			AddTimeLong(&nextExec, secstoadd, nstoadd);
 			printf("After: %i %i\n\n", nextExec.seconds, nextExec.ns);
 
 /* Test unit block
