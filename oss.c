@@ -181,7 +181,7 @@ void DoSharedWork()
 
 		pid_t pid; //pid temp
 		int usertracker = -1; //updated by userready to the position of ready struct to be launched
-		if (activeProcs < 19 && (data->sysTime.seconds >= nextExec.seconds) && (data->sysTime.ns >= nextExec.ns))
+		if (remainingExecs > 0 && activeProcs < 19 && (data->sysTime.seconds >= nextExec.seconds) && (data->sysTime.ns >= nextExec.ns))
 		{
 			pid = fork(); //the mircle of proccess creation
 
@@ -261,7 +261,7 @@ void DoSharedWork()
 			}
 		}
 
-		if (exitCount == 100 && remainingExecs == 0) //only get out of loop if we run out of execs or we have maxed out child count
+		if (remainingExecs <= 0 && exitCount >= 100) //only get out of loop if we run out of execs or we have maxed out child count
 			break;
 	}
 }
