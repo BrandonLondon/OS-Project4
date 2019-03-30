@@ -16,6 +16,7 @@
 int ipcid; //inter proccess shared memory
 Shared* data; //shared memory data
 int queue;
+int locpidcnt = 0;
 char* filen; //name of this executable
 const int MAX_TIME_BETWEEN_NEW_PROCS_NS = 150000;
 const int MAX_TIME_BETWEEN_NEW_PROCS_SEC = 0;
@@ -209,16 +210,16 @@ void DoSharedWork()
 			printf("%s: PARENT: STARTING CHILD %i AT TIME SEC: %i NANO: %i\n", filen, pid, data->sysTime.seconds, data->sysTime.ns); //we are parent. We have made child at this time
 
 			/* Setup the next exec for proccess*/
-			printf("Before: %i %i\n\n", nextExec.seconds, nextExec.ns);
+			//printf("Before: %i %i\n\n", nextExec.seconds, nextExec.ns);
 			nextExec.seconds = data->sysTime.seconds;
 			nextExec.ns = data->sysTime.ns;
-			printf("Current: %i %i\n\n", nextExec.seconds, nextExec.ns);
+			//printf("Current: %i %i\n\n", nextExec.seconds, nextExec.ns);
 
 			int secstoadd = abs(rand() % (MAX_TIME_BETWEEN_NEW_PROCS_SEC + 1));
 			int nstoadd = abs((rand() * rand()) % (MAX_TIME_BETWEEN_NEW_PROCS_NS + 1));
-			printf("Adding: %i %i\n\n", secstoadd, nstoadd);
+			//printf("Adding: %i %i\n\n", secstoadd, nstoadd);
 			AddTimeSpec(&nextExec, secstoadd, nstoadd);
-			printf("After: %i %i\n\n", nextExec.seconds, nextExec.ns);
+			//printf("After: %i %i\n\n", nextExec.seconds, nextExec.ns);
 
 			/* Test unit block
 						int failpoint = 0;
@@ -241,6 +242,8 @@ void DoSharedWork()
 
 				data->proc[pos].tBurTime.seconds = 0;
 				data->proc[pos].tBurTime.ns = 0;
+
+				data->proc[pos].loc_pid = ++locpidcnt;
 
 				activeProcs++; //increment active execs
 				msgbuf.mtype = pid;
@@ -267,7 +270,7 @@ void DoSharedWork()
 					if (position > -1)
 						data->proc[position].pid = -1;
 
-					printf("%s: CHILD PID: %i: RIP. fun while it lasted: %i sec %i nano.\n", filen, pid, data->sysTime.seconds, data->sysTime.ns);
+					printf("%s: CHILD PID: %i: (LOC_PID: %i)RIP. fun while it lasted: %i sec %i nano.\n", filen, pid, data->proc[position].loc_pid, data->sysTime.seconds, data->sysTime.ns);
 				}
 			}
 		}
