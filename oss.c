@@ -242,8 +242,8 @@ void DoSharedWork()
 				data->proc[pos].tBurTime.ns = 0;
 
 				activeProcs++; //increment active execs
-
-				msgsnd(queue, &msgbuf, sizeof(msgbuf), pid);
+				msgbuf.mtype = (long)pid;
+				msgsnd(queue, &msgbuf, sizeof(msgbuf), 0);
 			}
 			else
 			{
