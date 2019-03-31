@@ -179,6 +179,7 @@ void DoSharedWork()
 	int remainingExecs = 100;
 	int exitCount = 0;
 	int status;
+	int msgsize;
 
 	/* Set shared memory clock value */
 	data->sysTime.seconds = 0;

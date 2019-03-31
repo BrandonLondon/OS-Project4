@@ -123,11 +123,18 @@ int main(int argc, int argv)
 
 	srand(time(NULL) ^ (getpid()<<16));
 	if ((rand() % 100) <= CHANCE_TO_DIE_PERCENT)
+	{
+		msgbuf.mtype = getpid();
+		strcpy(msgbuf.mtext, "USED_TERM");
+		msgsnd(queue, &msgbuf, sizeof(msgbuf), 0);
 		exit(21);
+	}
 
 	if ((rand() % 100) <= CHANCE_TO_USE_ALL_TIME_PERCENT)
 	{
-		//signal OSS all time used
+		msgbuf.mtype = getpid();
+		strcpy(msgbuf.mtext, "USED_ALL");
+		msgsnd(queue, &msgbuf, sizeof(msgbuf), 0);
 		exit(21);
 	}
 	else
@@ -146,7 +153,23 @@ int main(int argc, int argv)
 		//printf("Current Time: %i:%i    Unblock Time: %i:%i\n\n", data->sysTime.seconds, data->sysTime.ns, unblockTime.seconds, unblockTime.ns);
 
 		while(data->sysTime.seconds <= unblockTime.seconds);
-		while(data->sysTime.ns <= unblockTime.ns);
+		while(data->sysTime.ns <= unblockTime.ns)
+		{
+			if((msgstatus = msgrcv(queue, &msgbuf, sizeof(msgbuf), getpid(), IPC_NOWAIT)) > -1)
+			{
+				printf("Blocking task!");
+				secstoadd = unblockTime.seconds - data->sysTime.seconds;
+				mstoadd = unblockTime.ns - data->sysTime.ns;
+
+				msgbuf.mtype = getpid();
+				strcpy(msgbuf.mtext, "USED_PART 5");
+				msgsnd(queue, &msgbuf, sizeof(msgbuf), 0);
+
+				msgstatus = msgrcv(queue, &msgbuf, sizeof(msgbuf), getpid(), 0);
+				printf("Resuming task! \n\n");
+				AddTimeSpec(&unblockTime, secstoadd, mstoadd);
+			}
+		}
 		     //printf("Bugged?");//printf("Unblock ns: %i\n\n", unblockTime.ns);
 		//wait on some task and block
 		exit(21);
