@@ -181,9 +181,20 @@ int main(int argc, int argv)
 		//printf("Current Time: %i:%i    Unblock Time: %i:%i\n\n", data->sysTime.seconds, data->sysTime.ns, unblockTime.seconds, unblockTime.ns);
 
 		while(data->sysTime.seconds <= unblockTime.seconds);
-		while(data->sysTime.ns <= unblockTime.ns)
-		{
-				msgstatus = msgrcv(toChildQueue, &msgbuf, sizeof(msgbuf), getpid(), 0);
+		while(data->sysTime.ns <= unblockTime.ns);
+
+		msgbuf.mtype = getpid();
+		strcpy(msgbuf.mtext, "USED_PART 5");
+		msgsnd(toMasterQueue, &msgbuf, sizeof(msgbuf), 0);
+		msgrcv(toChildQueue, &msgbuf, sizeof(msgbuf), getpid(), 0);
+
+		msgbuf.mtype = getpid();
+		strcpy(msgbuf.mtext, "USED_TERM");
+		msgsnd(toMasterQueue, &msgbuf, sizeof(msgbuf), 0);
+
+		/*{
+			if((msgstatus = msgrcv(toChildQueue, &msgbuf, sizeof(msgbuf), getpid(), 0)) > -1)
+			{
 				secstoadd = unblockTime.seconds - data->sysTime.seconds;
 				mstoadd = unblockTime.ns - data->sysTime.ns;
 
@@ -195,7 +206,8 @@ int main(int argc, int argv)
 				msgstatus = msgrcv(toChildQueue, &msgbuf, sizeof(msgbuf), getpid(), 0);
 				printf("Resuming task! \n\n");
 				AddTimeSpec(&unblockTime, secstoadd, mstoadd);
-		}
+			}
+		}*/
 		printf("Child exit");//printf("Unblock ns: %i\n\n", unblockTime.ns);
 		//wait on some task and block
 		exit(21);
