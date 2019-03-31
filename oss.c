@@ -12,7 +12,7 @@
 #include "string.h"
 #include <sys/types.h>
 #include <sys/msg.h>
-#include "toChildQueue.h"
+#include "queue.h"
 
 int ipcid; //inter proccess shared memory
 Shared* data; //shared memory data
