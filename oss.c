@@ -217,6 +217,9 @@ void DoSharedWork()
 	/* Create queues */
 	struct Queue* priqueue = createQueue(19); //toChildQueue of local PIDS (fake/emulated pids)
 
+	/* Message tracking */
+	int pauseSent = 0;
+
 	srand(time(0));
 
 	while (1) {
@@ -291,11 +294,12 @@ void DoSharedWork()
 
 		if(procRunning == 1)
 		{
-			if(data->sysTime.seconds >= timesliceEnd.seconds && data->sysTime.ns >= timesliceEnd.ns)
+			if(data->sysTime.seconds >= timesliceEnd.seconds && data->sysTime.ns >= timesliceEnd.ns && pauseSent == 0)
 			{
 				msgbuf.mtype = data->proc[activeProcIndex].pid;
 				strcpy(msgbuf.mtext, "");
-				msgsnd(toChildQueue, &msgbuf, sizeof(msgbuf), 0);
+				msgsnd(toChildQueue, &msgbuf, sizeof(msgbuf), IPC_NOWAIT);
+				pauseSent = 1;
 			}
 
 			if((msgsize = msgrcv(toMasterQueue, &msgbuf, sizeof(msgbuf), data->proc[activeProcIndex].pid, IPC_NOWAIT)) > -1)
@@ -325,12 +329,13 @@ void DoSharedWork()
 		{
 			int activeProcIndex = FindLocPID(dequeue(priqueue));
 			msgbuf.mtype = data->proc[activeProcIndex].pid;
-			msgsnd(toChildQueue, &msgbuf, sizeof(msgbuf), 0);
+			msgsnd(toChildQueue, &msgbuf, sizeof(msgbuf), IPC_NOWAIT);
 
 			timesliceEnd.seconds = data->sysTime.seconds;
 			timesliceEnd.ns = data->sysTime.ns;
 			AddTime(&timesliceEnd, QUEUE_BASE_TIME * 1000000);
 
+			pauseSent = 0;
 			procRunning = 1;
 		}
 
