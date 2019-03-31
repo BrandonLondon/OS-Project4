@@ -304,7 +304,7 @@ void DoSharedWork()
 
 			if((msgsize = msgrcv(toMasterQueue, &msgbuf, sizeof(msgbuf), data->proc[activeProcIndex].pid, IPC_NOWAIT)) > -1)
 			{
-				printf("RECIEVED MESSAGE IN MASTER MESSAGE QUEUE!\n\n");
+				printf("RECIEVED MESSAGE IN MASTER MESSAGE QUEUE! %s\n\n", msgbuf.mtext);
 				if(strcmp(msgbuf.mtext, "USED_TERM") == 0)
 				{
 					printf("Proc dies!\n");

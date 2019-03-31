@@ -148,7 +148,6 @@ int main(int argc, int argv)
 		msgbuf.mtype = getpid();
 		strcpy(msgbuf.mtext, "USED_TERM");
 		msgsnd(toMasterQueue, &msgbuf, sizeof(msgbuf), 0);
-		printf("Child exit");
 		exit(21);
 	}
 
@@ -157,7 +156,6 @@ int main(int argc, int argv)
 		msgbuf.mtype = getpid();
 		strcpy(msgbuf.mtext, "USED_ALL");
 		msgsnd(toMasterQueue, &msgbuf, sizeof(msgbuf), 0);
-		printf("Child exit");
 		exit(21);
 	}
 	else
