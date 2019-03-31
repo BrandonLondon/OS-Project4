@@ -17,7 +17,8 @@ const int CHANCE_TO_DIE_PERCENT = 10;
 const int CHANCE_TO_USE_ALL_TIME_PERCENT = 30;
 
 Shared* data;
-int queue;
+int toChildQueue;
+int toMasterQueue;
 int ipcid;
 char* filen;
 
@@ -60,13 +61,33 @@ void QueueAttatch()
 		return;
 	}
 
-	queue = msgget(shmkey, 0600 | IPC_CREAT);
+	toChildQueue = msgget(shmkey, 0600 | IPC_CREAT);
 
-	if (queue == -1)
+	if (toChildQueue == -1)
 	{
 		printf("\n%s: ", filen);
 		fflush(stdout);
-		perror("Error: queue creation failed");
+		perror("Error: toChildQueue creation failed");
+		return;
+	}
+
+	shmkey = ftok("shmsharemsg2", 767);
+
+	if (shmkey == -1) //check if the input file exists
+	{
+		printf("\n%s: ", filen);
+		fflush(stdout);
+		perror("Error: Ftok failed");
+		return;
+	}
+
+	toMasterQueue = msgget(shmkey, 0600 | IPC_CREAT);
+
+	if (toMasterQueue == -1)
+	{
+		printf("\n%s: ", filen);
+		fflush(stdout);
+		perror("Error: toMasterQueue creation failed");
 		return;
 	}
 }
@@ -109,13 +130,13 @@ int main(int argc, int argv)
 	ShmAttatch();
 	QueueAttatch();
 
-	int msgstatus = msgrcv(queue, &msgbuf, sizeof(msgbuf), getpid(), 0);
+	int msgstatus = msgrcv(toChildQueue, &msgbuf, sizeof(msgbuf), getpid(), 0);
 
 	if (msgstatus == -1) //check if the input file exists
 	{
 		printf("\n%s: ", filen);
 		fflush(stdout);
-		perror("Error: Failed to read message queue");
+		perror("Error: Failed to read message toChildQueue");
 		return;
 	}
 
@@ -126,7 +147,7 @@ int main(int argc, int argv)
 	{
 		msgbuf.mtype = getpid();
 		strcpy(msgbuf.mtext, "USED_TERM");
-		msgsnd(queue, &msgbuf, sizeof(msgbuf), 0);
+		msgsnd(toMasterQueue, &msgbuf, sizeof(msgbuf), 0);
 		printf("Child exit");
 		exit(21);
 	}
@@ -135,7 +156,7 @@ int main(int argc, int argv)
 	{
 		msgbuf.mtype = getpid();
 		strcpy(msgbuf.mtext, "USED_ALL");
-		msgsnd(queue, &msgbuf, sizeof(msgbuf), 0);
+		msgsnd(toMasterQueue, &msgbuf, sizeof(msgbuf), 0);
 		printf("Child exit");
 		exit(21);
 	}
@@ -157,7 +178,7 @@ int main(int argc, int argv)
 		while(data->sysTime.seconds <= unblockTime.seconds);
 		while(data->sysTime.ns <= unblockTime.ns)
 		{
-			if((msgstatus = msgrcv(queue, &msgbuf, sizeof(msgbuf), getpid(), IPC_NOWAIT)) > -1)
+			if((msgstatus = msgrcv(toChildQueue, &msgbuf, sizeof(msgbuf), getpid(), IPC_NOWAIT)) > -1)
 			{
 				printf("Blocking task!");
 				secstoadd = unblockTime.seconds - data->sysTime.seconds;
@@ -165,9 +186,9 @@ int main(int argc, int argv)
 
 				msgbuf.mtype = getpid();
 				strcpy(msgbuf.mtext, "USED_PART 5");
-				msgsnd(queue, &msgbuf, sizeof(msgbuf), 0);
+				msgsnd(toMasterQueue, &msgbuf, sizeof(msgbuf), 0);
 
-				msgstatus = msgrcv(queue, &msgbuf, sizeof(msgbuf), getpid(), 0);
+				msgstatus = msgrcv(toChildQueue, &msgbuf, sizeof(msgbuf), getpid(), 0);
 				printf("Resuming task! \n\n");
 				AddTimeSpec(&unblockTime, secstoadd, mstoadd);
 			}

@@ -12,11 +12,12 @@
 #include "string.h"
 #include <sys/types.h>
 #include <sys/msg.h>
-#include "queue.h"
+#include "toChildQueue.h"
 
 int ipcid; //inter proccess shared memory
 Shared* data; //shared memory data
-int queue;
+int toChildQueue;
+int toMasterQueue;
 int locpidcnt = 0;
 char* filen; //name of this executable
 const int MAX_TIME_BETWEEN_NEW_PROCS_NS = 150000;
@@ -75,7 +76,7 @@ void Handler(int signal) //handle ctrl-c and timer hit
 	    	kill(data->proc[i].pid, SIGTERM);
 
 	shmctl(ipcid, IPC_RMID, NULL); //free shared mem
-	msgctl(queue, IPC_RMID, NULL);
+	msgctl(toChildQueue, IPC_RMID, NULL);
 
 	kill(getpid(), SIGTERM); //kill self
 }
@@ -193,7 +194,7 @@ void DoSharedWork()
 	int exitCount = 0;
 	int status;
 
-	/* Proc queue and message queue data */
+	/* Proc toChildQueue and message toChildQueue data */
 	int activeProcIndex = -1;
 	int procRunning = 0;
 	int msgsize;
@@ -208,7 +209,7 @@ void DoSharedWork()
 	nextExec.ns = 0;
 
 	/* Create queues */
-	struct Queue* priqueue = createQueue(19); //queue of local PIDS (fake/emulated pids)
+	struct Queue* priqueue = createQueue(19); //toChildQueue of local PIDS (fake/emulated pids)
 
 	srand(time(0));
 
@@ -282,9 +283,9 @@ void DoSharedWork()
 			}
 		}
 
-		/*if(procRunning == 1)
+		if(procRunning == 1)
 		{
-			if((msgsize = msgrcv(queue, &msgbuf, sizeof(msgbuf), 0, IPC_NOWAIT)) > -1)
+			if((msgsize = msgrcv(toMasterQueue, &msgbuf, sizeof(msgbuf), 0, IPC_NOWAIT)) > -1)
 			{
 				if(strcmp(msgbuf.mtext, "USED_TERM") == 0)
 				{
@@ -304,15 +305,15 @@ void DoSharedWork()
 					procRunning = 0;
 				}
 			}
-		}*/
+		}
 
 		if(!isEmpty(priqueue) && procRunning == 0)
 		{
 			int activeProcIndex = FindLocPID(dequeue(priqueue));
-			printf("Got queue PID index\n");
+			printf("Got toChildQueue PID index\n");
 			msgbuf.mtype = data->proc[activeProcIndex].pid;
 			printf("Wrote to mtype real PID: %i\n", msgbuf.mtype);
-			msgsnd(queue, &msgbuf, sizeof(msgbuf), 0);
+			msgsnd(toChildQueue, &msgbuf, sizeof(msgbuf), 0);
 			printf("Sent message...\n");
 			procRunning = 1;
 		}
@@ -341,7 +342,7 @@ void DoSharedWork()
 	}
 
 	//shmctl(ipcid, IPC_RMID, NULL);
-	//msgctl(queue, IPC_RMID, NULL);
+	//msgctl(toChildQueue, IPC_RMID, NULL);
 }
 
 void QueueAttatch()
@@ -356,13 +357,33 @@ void QueueAttatch()
 		return;
 	}
 
-	queue = msgget(shmkey, 0600 | IPC_CREAT);
+	toChildQueue = msgget(shmkey, 0600 | IPC_CREAT);
 
-	if (queue == -1)
+	if (toChildQueue == -1)
 	{
 		printf("\n%s: ", filen);
 		fflush(stdout);
-		perror("Error: queue creation failed");
+		perror("Error: toChildQueue creation failed");
+		return;
+	}
+
+	shmkey = ftok("shmsharemsg2", 767);
+
+	if (shmkey == -1) //check if the input file exists
+	{
+		printf("\n%s: ", filen);
+		fflush(stdout);
+		perror("Error: Ftok failed");
+		return;
+	}
+
+	toMasterQueue = msgget(shmkey, 0600 | IPC_CREAT);
+
+	if (toMasterQueue == -1)
+	{
+		printf("\n%s: ", filen);
+		fflush(stdout);
+		perror("Error: toMasterQueue creation failed");
 		return;
 	}
 }
