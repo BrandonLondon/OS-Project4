@@ -2,6 +2,8 @@
 
 #include <semaphore.h>
 
+const MAX_PROCS = 19;
+
 typedef struct {
 	unsigned int seconds;
 	unsigned int ns;
@@ -17,7 +19,7 @@ typedef struct {
 } ProcBlock;
 
 typedef struct {
-	ProcBlock proc[19];
+	ProcBlock proc[MAX_PROCS];
 	Time sysTime;
 } Shared;
 

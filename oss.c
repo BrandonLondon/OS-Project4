@@ -71,7 +71,7 @@ void Handler(int signal) //handle ctrl-c and timer hit
 	fflush(stdout);
 
 	int i;
-	for(i = 0; i < 19; i++)
+	for(i = 0; i < MAX_PROCS; i++)
 	    if(data->proc[i].pid != -1)
 	    	kill(data->proc[i].pid, SIGTERM);
 
@@ -152,7 +152,7 @@ int SetupTimer() //setup timer handling
 int FindEmptyProcBlock()
 {
 	int i;
-	for (i = 0; i < 19; i++)
+	for (i = 0; i < MAX_PROCS; i++)
 	{
 		if (data->proc[i].pid == -1)
 			return i; //return proccess table position of empty
@@ -164,14 +164,14 @@ int FindEmptyProcBlock()
 void SweepProcBlocks()
 {
 	int i;
-	for (i = 0; i < 19; i++)
+	for (i = 0; i < MAX_PROCS; i++)
 		data->proc[i].pid = -1;
 }
 
 int FindPID(int pid)
 {
 	int i;
-	for (i = 0; i < 19; i++)
+	for (i = 0; i < MAX_PROCS; i++)
 		if (data->proc[i].pid == pid)
 			return i;
 	return -1;
@@ -181,7 +181,7 @@ int FindPID(int pid)
 int FindLocPID(int pid)
 {
 	int i;
-	for (i = 0; i < 19; i++)
+	for (i = 0; i < MAX_PROCS; i++)
 		if (data->proc[i].loc_pid == pid)
 			return i;
 	return -1;
@@ -215,7 +215,7 @@ void DoSharedWork()
 	timesliceEnd.ns = 0;
 
 	/* Create queues */
-	struct Queue* priqueue = createQueue(19); //toChildQueue of local PIDS (fake/emulated pids)
+	struct Queue* priqueue = createQueue(MAX_PROCS); //toChildQueue of local PIDS (fake/emulated pids)
 
 	/* Message tracking */
 	int pauseSent = 0;
@@ -227,7 +227,7 @@ void DoSharedWork()
 
 		pid_t pid; //pid temp
 		int usertracker = -1; //updated by userready to the position of ready struct to be launched
-		if (remainingExecs > 0 && activeProcs < 19 && (data->sysTime.seconds >= nextExec.seconds) && (data->sysTime.ns >= nextExec.ns))
+		if (remainingExecs > 0 && activeProcs < MAX_PROCS && (data->sysTime.seconds >= nextExec.seconds) && (data->sysTime.ns >= nextExec.ns))
 		{
 			pid = fork(); //the mircle of proccess creation
 
