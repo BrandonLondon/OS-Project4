@@ -170,25 +170,20 @@ int main(int argc, int argv)
 	else
 	{
 		printf("Using only part...\n\n");
-
 		Time unblockTime;
 		unblockTime.seconds = data->sysTime.seconds;
 		unblockTime.ns = data->sysTime.ns;
-
 		int secstoadd = rand() % 6;
 		int mstoadd = (rand() % 1001) * 1000000;
 
 		AddTimeSpec(&unblockTime, secstoadd, mstoadd); //set unblock time to some value seconds value 0-5 and 0-1000ms but converted to ns to make my life easier
 
 		//printf("Current Time: %i:%i    Unblock Time: %i:%i\n\n", data->sysTime.seconds, data->sysTime.ns, unblockTime.seconds, unblockTime.ns);
-
 		while(1)
 		{
 			if(data->sysTime.seconds >= unblockTime.seconds && data->sysTime.ns >= unblockTime.ns)
 				break;
-			printf("Waiting on ticket: %i", pid);	
-			msgrcv(toChildQueue, &msgbuf, sizeof(msgbuf), pid, 0);
-			printf("Called!");
+
 			if(msgrcv(toChildQueue, &msgbuf, sizeof(msgbuf), pid, IPC_NOWAIT) > -1)
 			{
 				msgbuf.mtype = getpid();
