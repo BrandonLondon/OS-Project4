@@ -183,8 +183,7 @@ int main(int argc, int argv)
 		while(data->sysTime.seconds <= unblockTime.seconds);
 		while(data->sysTime.ns <= unblockTime.ns)
 		{
-			printf("Message:%i\n", msgrcv(toChildQueue, &msgbuf, sizeof(msgbuf), getpid(), IPC_NOWAIT));
-			if((msgstatus = msgrcv(toChildQueue, &msgbuf, sizeof(msgbuf), getpid(), IPC_NOWAIT)) > -1)
+			if((msgstatus = msgrcv(toChildQueue, &msgbuf, sizeof(msgbuf), getpid(), 0) > -1)
 			{
 				secstoadd = unblockTime.seconds - data->sysTime.seconds;
 				mstoadd = unblockTime.ns - data->sysTime.ns;
