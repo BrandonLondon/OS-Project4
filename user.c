@@ -186,12 +186,11 @@ int main(int argc, int argv)
 			strcpy(msgbuf.mtext, "USED_PART 5");
 			msgsnd(toMasterQueue, &msgbuf, sizeof(msgbuf), 0);
 			msgrcv(toChildQueue, &msgbuf, sizeof(msgbuf), getpid(), 0);
+		}
 
 			msgbuf.mtype = getpid();
 			strcpy(msgbuf.mtext, "USED_TERM");
 			msgsnd(toMasterQueue, &msgbuf, sizeof(msgbuf), 0);
-		}
-
 		/*{
 			if((msgstatus = msgrcv(toChildQueue, &msgbuf, sizeof(msgbuf), getpid(), 0)) > -1)
 			{
