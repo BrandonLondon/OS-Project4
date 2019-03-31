@@ -325,7 +325,7 @@ void DoSharedWork()
 			}
 		}
 
-		if(!isEmpty(priqueue) && procRunning == 0)
+		if(isEmpty(priqueue) == 0 && procRunning == 0)
 		{
 			int activeProcIndex = FindLocPID(dequeue(priqueue));
 			msgbuf.mtype = data->proc[activeProcIndex].pid;
