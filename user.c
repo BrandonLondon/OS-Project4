@@ -13,8 +13,8 @@
 #include <sys/types.h>
 #include <sys/msg.h>
 
-const int CHANCE_TO_DIE_PERCENT = 10;
-const int CHANCE_TO_USE_ALL_TIME_PERCENT = 90;
+const int CHANCE_TO_DIE_PERCENT = 30;
+const int CHANCE_TO_USE_ALL_TIME_PERCENT = 100;
 
 Shared* data;
 int toChildQueue;
@@ -156,7 +156,6 @@ int main(int argc, int argv)
 		msgbuf.mtype = getpid();
 		strcpy(msgbuf.mtext, "USED_ALL");
 		msgsnd(toMasterQueue, &msgbuf, sizeof(msgbuf), 0);
-		exit(21);
 	}
 	else
 	{
