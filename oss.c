@@ -12,6 +12,7 @@
 #include "string.h"
 #include <sys/types.h>
 #include <sys/msg.h>
+#include "queue.h"
 
 int ipcid; //inter proccess shared memory
 Shared* data; //shared memory data
@@ -38,6 +39,7 @@ void SweepProcBlocks();
 void AddTimeSpec(Time* time, int sec, int nano);
 void AddTime(Time* time, int amount);
 int FindPID(int pid);
+int FindLocPID(int pid);
 void QueueAttatch();
 
 struct {
@@ -173,12 +175,27 @@ int FindPID(int pid)
 	return -1;
 }
 
+
+int FindLocPID(int pid)
+{
+	int i;
+	for (i = 0; i < 19; i++)
+		if (data->proc[i].loc_pid == pid)
+			return i;
+	return -1;
+}
+
 void DoSharedWork()
 {
+	/* General sched data */
 	int activeProcs = 0;
 	int remainingExecs = 100;
 	int exitCount = 0;
 	int status;
+
+	/* Proc queue and message queue data */
+	int activeProcIndex = -1;
+	int procRunning = 0;
 	int msgsize;
 
 	/* Set shared memory clock value */
@@ -189,6 +206,9 @@ void DoSharedWork()
 	Time nextExec;
 	nextExec.seconds = 0;
 	nextExec.ns = 0;
+
+	/* Create queues */
+	struct Queue* priqueue = createQueue(19); //queue of local PIDS (fake/emulated pids)
 
 	srand(time(0));
 
@@ -251,15 +271,48 @@ void DoSharedWork()
 
 				data->proc[pos].loc_pid = ++locpidcnt;
 
+				enqueue(priqueue, data->proc[pos].loc_pid);
+
 				activeProcs++; //increment active execs
-				msgbuf.mtype = pid;
-				msgsnd(queue, &msgbuf, sizeof(msgbuf), 0);
 			}
 			else
 			{
 				printf("%s: PARENT: CHILD FAILED TO FIND CONTROL BLOCK. TERMINATING CHILD\n\n");
 				kill(pid, SIGTERM);
 			}
+		}
+
+		if(procRunning == 1)
+		{
+			if((msgsize = msgrcv(queue, &msgbuf, sizeof(msgbuf), 0, IPC_NOWAIT)) > -1)
+			{
+				if(strcmp(msgbuf.mtext, "USED_TERM") == 0)
+				{
+					printf("Proc dies!\n");
+					procRunning = 0;
+				}
+				else if(strcmp(msgbuf.mtext, "USED_ALL") == 0)
+				{
+					printf("Proc used all time!\n");
+					enqueue(priqueue, data->proc[FindPID(msgbuf.mtype)].loc_pid);
+					procRunning = 0;
+				}
+				else(strcmp(msgbuf.mtext, "USED_PART 5") == 0)
+				{
+					printf("Proc used 5!\n");
+					enqueue(priqueue, data->proc[FindPID(msgbuf.mtype)].loc_pid);
+					procRunning = 0;
+				}
+			}
+		}
+
+		if(!isEmpty(priqueue) && procRunning == 0)
+		{
+			int activeProcIndex = FindLocPID(dequeue(priqueue));
+
+			msgbuf.mtype = data->proc[activeProcIndex].pid;
+			msgsnd(queue, &msgbuf, sizeof(msgbuf), 0);
+			procRunning = 1;
 		}
 
 		if ((pid = waitpid((pid_t)-1, &status, WNOHANG)) > 0) //if a PID is returned
