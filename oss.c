@@ -282,7 +282,7 @@ void DoSharedWork()
 			}
 		}
 
-		if(procRunning == 1)
+		/*if(procRunning == 1)
 		{
 			if((msgsize = msgrcv(queue, &msgbuf, sizeof(msgbuf), 0, IPC_NOWAIT)) > -1)
 			{
@@ -304,7 +304,7 @@ void DoSharedWork()
 					procRunning = 0;
 				}
 			}
-		}
+		}*/
 
 		if(!isEmpty(priqueue) && procRunning == 0)
 		{

@@ -127,6 +127,7 @@ int main(int argc, int argv)
 		msgbuf.mtype = getpid();
 		strcpy(msgbuf.mtext, "USED_TERM");
 		msgsnd(queue, &msgbuf, sizeof(msgbuf), 0);
+		printf("Child exit");
 		exit(21);
 	}
 
@@ -135,6 +136,7 @@ int main(int argc, int argv)
 		msgbuf.mtype = getpid();
 		strcpy(msgbuf.mtext, "USED_ALL");
 		msgsnd(queue, &msgbuf, sizeof(msgbuf), 0);
+		printf("Child exit");
 		exit(21);
 	}
 	else
@@ -170,7 +172,7 @@ int main(int argc, int argv)
 				AddTimeSpec(&unblockTime, secstoadd, mstoadd);
 			}
 		}
-		     //printf("Bugged?");//printf("Unblock ns: %i\n\n", unblockTime.ns);
+		printf("Child exit");//printf("Unblock ns: %i\n\n", unblockTime.ns);
 		//wait on some task and block
 		exit(21);
 	}
