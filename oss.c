@@ -331,8 +331,9 @@ void DoSharedWork()
 			printf("Attemping to dequeue and start proccess...\n\n");
 			int activeProcIndex = FindLocPID(dequeue(priqueue));
 			msgbuf.mtype = data->proc[activeProcIndex].pid;
+			strcpy(msgbuf, "");
 			msgsnd(toChildQueue, &msgbuf, sizeof(msgbuf), IPC_NOWAIT);
-
+			printf("Started proccess, sending message with values: %i %s", msgbuf.mtype, msgbuf.mtext);
 			timesliceEnd.seconds = data->sysTime.seconds;
 			timesliceEnd.ns = data->sysTime.ns;
 			AddTime(&timesliceEnd, QUEUE_BASE_TIME * 1000000);
