@@ -132,7 +132,7 @@ int main(int argc, int argv)
 
 	int msgstatus = msgrcv(toChildQueue, &msgbuf, sizeof(msgbuf), getpid(), 0);
 
-	if (msgstatus == -1) //check if the input file exists
+	if (msgstatus == -1) 
 	{
 		printf("\n%s: ", filen);
 		fflush(stdout);
@@ -183,8 +183,7 @@ int main(int argc, int argv)
 		while(data->sysTime.seconds <= unblockTime.seconds);
 		while(data->sysTime.ns <= unblockTime.ns)
 		{
-			if((msgstatus = msgrcv(toChildQueue, &msgbuf, sizeof(msgbuf), getpid(), 0)) > -1)
-			{
+				msgstatus = msgrcv(toChildQueue, &msgbuf, sizeof(msgbuf), getpid(), 0);
 				secstoadd = unblockTime.seconds - data->sysTime.seconds;
 				mstoadd = unblockTime.ns - data->sysTime.ns;
 
@@ -196,7 +195,6 @@ int main(int argc, int argv)
 				msgstatus = msgrcv(toChildQueue, &msgbuf, sizeof(msgbuf), getpid(), 0);
 				printf("Resuming task! \n\n");
 				AddTimeSpec(&unblockTime, secstoadd, mstoadd);
-			}
 		}
 		printf("Child exit");//printf("Unblock ns: %i\n\n", unblockTime.ns);
 		//wait on some task and block
