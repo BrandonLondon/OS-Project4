@@ -266,7 +266,6 @@ void DoSharedWork()
 			if (pos > -1)
 			{
 				data->proc[pos].pid = pid;
-
 				int userRoll = ((rand() % 100) < CHANCE_TO_BE_USER) ? 1 : 0;
 				data->proc[pos].priority = userRoll;
 
@@ -329,7 +328,7 @@ void DoSharedWork()
 		if(isEmpty(priqueue) == 0 && procRunning == 0)
 		{
 			//printf("Attemping to dequeue and start proccess...\n\n");
-			int activeProcIndex = FindLocPID(dequeue(priqueue));
+			activeProcIndex = FindLocPID(dequeue(priqueue));
 			msgbuf.mtype = data->proc[activeProcIndex].pid;
 			strcpy(msgbuf.mtext, "");
 			msgsnd(toChildQueue, &msgbuf, sizeof(msgbuf), IPC_NOWAIT);

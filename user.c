@@ -130,7 +130,9 @@ int main(int argc, int argv)
 	ShmAttatch();
 	QueueAttatch();
 
-	int msgstatus = msgrcv(toChildQueue, &msgbuf, sizeof(msgbuf), getpid(), 0);
+	int pid = getpid();
+
+	int msgstatus = msgrcv(toChildQueue, &msgbuf, sizeof(msgbuf), pid, 0);
 
 	if (msgstatus == -1) 
 	{
@@ -140,7 +142,7 @@ int main(int argc, int argv)
 		return;
 	}
 
-	printf("IM ALIVE!..but not for long %i\n", getpid());
+	printf("IM ALIVE!..but not for long %i\n", pid);
 
 	srand(time(NULL) ^ (getpid()<<16));
 	if ((rand() % 100) <= CHANCE_TO_DIE_PERCENT)
@@ -184,8 +186,10 @@ int main(int argc, int argv)
 		{
 			if(data->sysTime.seconds >= unblockTime.seconds && data->sysTime.ns >= unblockTime.ns)
 				break;
-
-			if(msgrcv(toChildQueue, &msgbuf, sizeof(msgbuf), getpid(), IPC_NOWAIT) > 0)
+			printf("Waiting on ticket: %i", pid);	
+			msgrcv(toChildQueue, &msgbuf, sizeof(msgbuf), pid, 0);
+			printf("Called!");
+			if(msgrcv(toChildQueue, &msgbuf, sizeof(msgbuf), pid, IPC_NOWAIT) > -1)
 			{
 				msgbuf.mtype = getpid();
 				strcpy(msgbuf.mtext, "USED_PART 5");
@@ -193,7 +197,7 @@ int main(int argc, int argv)
 				msgsnd(toMasterQueue, &msgbuf, sizeof(msgbuf), 0);
 				printf("Message status: %i\n\n", msgstatus);
 				printf("Blocking task!");
-				msgrcv(toChildQueue, &msgbuf, sizeof(msgbuf), getpid(), 0);
+				msgrcv(toChildQueue, &msgbuf, sizeof(msgbuf), pid, 0);
 				printf("Resuming task! \n\n");
 			}
 		}
