@@ -331,7 +331,7 @@ void DoSharedWork()
 
 			timesliceEnd.seconds = data->sysTime.seconds;
 			timesliceEnd.ns = data->sysTime.ns;
-			AddTime(timesliceEnd, QUEUE_BASE_TIME * 1000000);
+			AddTime(&timesliceEnd, QUEUE_BASE_TIME * 1000000);
 
 			procRunning = 1;
 		}
