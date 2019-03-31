@@ -180,8 +180,7 @@ int main(int argc, int argv)
 
 		//printf("Current Time: %i:%i    Unblock Time: %i:%i\n\n", data->sysTime.seconds, data->sysTime.ns, unblockTime.seconds, unblockTime.ns);
 
-		while(data->sysTime.seconds <= unblockTime.seconds);
-		while(data->sysTime.ns <= unblockTime.ns){
+		while(data->sysTime.seconds <= unblockTime.seconds || data->sysTime.ns <= unblockTime.ns){
 			msgbuf.mtype = getpid();
 			strcpy(msgbuf.mtext, "USED_PART 5");
 			msgsnd(toMasterQueue, &msgbuf, sizeof(msgbuf), 0);
