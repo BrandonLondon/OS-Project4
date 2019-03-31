@@ -208,6 +208,11 @@ void DoSharedWork()
 	nextExec.seconds = 0;
 	nextExec.ns = 0;
 
+	/* Setup proccess timeslice */
+	Time timesliceEnd;
+	timesliceEnd.seconds = 0;
+	timesliceEnd.ns = 0;
+
 	/* Create queues */
 	struct Queue* priqueue = createQueue(19); //toChildQueue of local PIDS (fake/emulated pids)
 
@@ -285,6 +290,13 @@ void DoSharedWork()
 
 		if(procRunning == 1)
 		{
+			if(data->sysTime.seconds <= timesliceEnd.seconds && data->sysTime.ns <= timesliceEnd.ns)
+			{
+				msgbuf.mtype = data->proc[activeProcIndex].pid;
+				strcpy(msgbuf.mtext, "");
+				msgsnd(toChildQueue, &msgbuf, sizeof(msgbuf), 0);
+			}
+
 			if((msgsize = msgrcv(toMasterQueue, &msgbuf, sizeof(msgbuf), data->proc[activeProcIndex].pid, IPC_NOWAIT)) > -1)
 			{
 				printf("RECIEVED MESSAGE IN MASTER MESSAGE QUEUE!\n\n");
@@ -316,6 +328,11 @@ void DoSharedWork()
 			printf("Wrote to mtype real PID: %i\n", msgbuf.mtype);
 			msgsnd(toChildQueue, &msgbuf, sizeof(msgbuf), 0);
 			printf("Sent message...\n");
+
+			timesliceEnd.seconds = data->sysTime.seconds;
+			timesliceEnd.ns = data->sysTime.ns;
+			AddTime(timesliceEnd, QUEUE_BASE_TIME * 1000000);
+
 			procRunning = 1;
 		}
 
