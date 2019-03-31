@@ -285,7 +285,7 @@ void DoSharedWork()
 
 		if(procRunning == 1)
 		{
-			if((msgsize = msgrcv(toMasterQueue, &msgbuf, sizeof(msgbuf), 0, IPC_NOWAIT)) > -1)
+			if((msgsize = msgrcv(toMasterQueue, &msgbuf, sizeof(msgbuf), data->proc[activeProcIndex].pid, IPC_NOWAIT)) > -1)
 			{
 				printf("RECIEVED MESSAGE IN MASTER MESSAGE QUEUE!\n\n");
 				if(strcmp(msgbuf.mtext, "USED_TERM") == 0)
