@@ -77,6 +77,7 @@ void Handler(int signal) //handle ctrl-c and timer hit
 
 	shmctl(ipcid, IPC_RMID, NULL); //free shared mem
 	msgctl(toChildQueue, IPC_RMID, NULL);
+	msgctl(toMasterQueue, IPC_RMID, NULL);
 
 	kill(getpid(), SIGTERM); //kill self
 }
@@ -290,7 +291,7 @@ void DoSharedWork()
 
 		if(procRunning == 1)
 		{
-			if(data->sysTime.seconds <= timesliceEnd.seconds && data->sysTime.ns <= timesliceEnd.ns)
+			if(data->sysTime.seconds >= timesliceEnd.seconds && data->sysTime.ns >= timesliceEnd.ns)
 			{
 				msgbuf.mtype = data->proc[activeProcIndex].pid;
 				strcpy(msgbuf.mtext, "");
@@ -323,11 +324,8 @@ void DoSharedWork()
 		if(!isEmpty(priqueue) && procRunning == 0)
 		{
 			int activeProcIndex = FindLocPID(dequeue(priqueue));
-			printf("Got toChildQueue PID index\n");
 			msgbuf.mtype = data->proc[activeProcIndex].pid;
-			printf("Wrote to mtype real PID: %i\n", msgbuf.mtype);
 			msgsnd(toChildQueue, &msgbuf, sizeof(msgbuf), 0);
-			printf("Sent message...\n");
 
 			timesliceEnd.seconds = data->sysTime.seconds;
 			timesliceEnd.ns = data->sysTime.ns;
