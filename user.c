@@ -153,9 +153,17 @@ int main(int argc, int argv)
 
 	if ((rand() % 100) <= CHANCE_TO_USE_ALL_TIME_PERCENT)
 	{
+		do {
 		msgbuf.mtype = getpid();
 		strcpy(msgbuf.mtext, "USED_ALL");
 		msgsnd(toMasterQueue, &msgbuf, sizeof(msgbuf), 0);
+		msgrcv(toChildQueue, &msgbuf, sizeof(msgbuf), getpid(), 0);
+		} while((rand() % 100) <= CHANCE_TO_DIE_PERCENT);
+
+		msgbuf.mtype = getpid();
+		strcpy(msgbuf.mtext, "USED_TERM");
+		msgsnd(toMasterQueue, &msgbuf, sizeof(msgbuf), 0);
+		exit(21);
 	}
 	else
 	{
