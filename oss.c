@@ -309,9 +309,11 @@ void DoSharedWork()
 		if(!isEmpty(priqueue) && procRunning == 0)
 		{
 			int activeProcIndex = FindLocPID(dequeue(priqueue));
-
+			printf("Got queue PID index\n");
 			msgbuf.mtype = data->proc[activeProcIndex].pid;
+			printf("Wrote to mtype real PID: %i\n", msgbuf.mtype);
 			msgsnd(queue, &msgbuf, sizeof(msgbuf), 0);
+			printf("Sent message...\n");
 			procRunning = 1;
 		}
 
