@@ -185,11 +185,17 @@ int main(int argc, int argv)
 			if(data->sysTime.seconds >= unblockTime.seconds && data->sysTime.ns >= unblockTime.ns)
 				break;
 
-			msgbuf.mtype = getpid();
-			strcpy(msgbuf.mtext, "USED_PART 5");
-			msgsnd(toMasterQueue, &msgbuf, sizeof(msgbuf), 0);
-			msgstatus = msgrcv(toChildQueue, &msgbuf, sizeof(msgbuf), getpid(), 0);
-			printf("Message status: %i\n\n", msgstatus);
+			msgstatus = msgrcv(toChildQueue, &msgbuf, sizeof(msgbuf), getpid(), IPC_NOWAIT);
+			if(msgstatus > 0)
+			{
+				msgbuf.mtype = getpid();
+				strcpy(msgbuf.mtext, "USED_PART 5");
+				msgsnd(toMasterQueue, &msgbuf, sizeof(msgbuf), 0);
+				printf("Message status: %i\n\n", msgstatus);
+				printf("Blocking task!");
+				msgrcv(toChildQueue, &msgbuf, sizeof(msgbuf), getpid(), 0);
+				printf("Resuming task! \n\n");
+			}
 		}
 
 			msgbuf.mtype = getpid();
