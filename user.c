@@ -143,13 +143,11 @@ int main(int argc, int argv)
 
 		AddTimeSpec(&unblockTime, secstoadd, mstoadd); //set unblock time to some value seconds value 0-5 and 0-1000ms but converted to ns to make my life easier
 
-		while (data->sysTime.seconds >= unblockTime.seconds)
-		{
-			while(data->sysTime.ns >= unblockTime.ns)
-			{
-				//printf("Spinlocking...\n\n");
-			}
-		}
+		//printf("Current Time: %i:%i    Unblock Time: %i:%i\n\n", data->sysTime.seconds, data->sysTime.ns, unblockTime.seconds, unblockTime.ns);
+
+		while(data->sysTime.seconds <= unblockTime.seconds);
+		while(data->sysTime.ns <= unblockTime.ns);
+		     //printf("Bugged?");//printf("Unblock ns: %i\n\n", unblockTime.ns);
 		//wait on some task and block
 		exit(21);
 	}

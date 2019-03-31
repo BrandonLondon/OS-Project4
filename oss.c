@@ -20,7 +20,7 @@ int locpidcnt = 0;
 char* filen; //name of this executable
 const int MAX_TIME_BETWEEN_NEW_PROCS_NS = 150000;
 const int MAX_TIME_BETWEEN_NEW_PROCS_SEC = 0;
-const int SCHEDULER_CLOCK_ADD_INC = 10;
+const int SCHEDULER_CLOCK_ADD_INC = 10000;
 
 const int CHANCE_TO_BE_USER = 50;
 const int QUEUE_BASE_TIME = 10;
