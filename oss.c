@@ -322,11 +322,13 @@ void DoSharedWork()
 					enqueue(priqueue, data->proc[FindPID(msgbuf.mtype)].loc_pid);
 					procRunning = 0;
 				}
+				printf("Is queue empty? %i Proccess running? %i", isEmpty(priqueue), procRunning);
 			}
 		}
 
 		if(isEmpty(priqueue) == 0 && procRunning == 0)
 		{
+			printf("Attemping to dequeue and start proccess...\n\n");
 			int activeProcIndex = FindLocPID(dequeue(priqueue));
 			msgbuf.mtype = data->proc[activeProcIndex].pid;
 			msgsnd(toChildQueue, &msgbuf, sizeof(msgbuf), IPC_NOWAIT);
