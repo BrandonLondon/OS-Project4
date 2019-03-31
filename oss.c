@@ -297,7 +297,7 @@ void DoSharedWork()
 					enqueue(priqueue, data->proc[FindPID(msgbuf.mtype)].loc_pid);
 					procRunning = 0;
 				}
-				else(strcmp(msgbuf.mtext, "USED_PART 5") == 0)
+				else if(strcmp(msgbuf.mtext, "USED_PART 5") == 0)
 				{
 					printf("Proc used 5!\n");
 					enqueue(priqueue, data->proc[FindPID(msgbuf.mtype)].loc_pid);
