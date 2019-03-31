@@ -184,11 +184,12 @@ int main(int argc, int argv)
 		{
 			if(data->sysTime.seconds >= unblockTime.seconds && data->sysTime.ns >= unblockTime.ns)
 				break;
-				
+
 			if(msgrcv(toChildQueue, &msgbuf, sizeof(msgbuf), getpid(), IPC_NOWAIT) > 0)
 			{
 				msgbuf.mtype = getpid();
 				strcpy(msgbuf.mtext, "USED_PART 5");
+				printf("SENDING TO MASTER!");
 				msgsnd(toMasterQueue, &msgbuf, sizeof(msgbuf), 0);
 				printf("Message status: %i\n\n", msgstatus);
 				printf("Blocking task!");
