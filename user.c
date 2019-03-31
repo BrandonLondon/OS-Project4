@@ -183,9 +183,9 @@ int main(int argc, int argv)
 		while(data->sysTime.seconds <= unblockTime.seconds);
 		while(data->sysTime.ns <= unblockTime.ns)
 		{
+			printf("Softblocking");
 			if((msgstatus = msgrcv(toChildQueue, &msgbuf, sizeof(msgbuf), getpid(), IPC_NOWAIT)) > -1)
 			{
-				printf("Blocking task!");
 				secstoadd = unblockTime.seconds - data->sysTime.seconds;
 				mstoadd = unblockTime.ns - data->sysTime.ns;
 
@@ -193,6 +193,7 @@ int main(int argc, int argv)
 				strcpy(msgbuf.mtext, "USED_PART 5");
 				msgsnd(toMasterQueue, &msgbuf, sizeof(msgbuf), 0);
 
+				printf("Blocking task!");
 				msgstatus = msgrcv(toChildQueue, &msgbuf, sizeof(msgbuf), getpid(), 0);
 				printf("Resuming task! \n\n");
 				AddTimeSpec(&unblockTime, secstoadd, mstoadd);
