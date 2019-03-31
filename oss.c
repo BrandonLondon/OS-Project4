@@ -333,10 +333,11 @@ void DoSharedWork()
 			msgbuf.mtype = data->proc[activeProcIndex].pid;
 			strcpy(msgbuf.mtext, "");
 			msgsnd(toChildQueue, &msgbuf, sizeof(msgbuf), IPC_NOWAIT);
-			printf("Started proccess, sending message with values: %i %s", msgbuf.mtype, msgbuf.mtext);
+			printf("Started proccess, sending message with values: %i %s\n\n", msgbuf.mtype, msgbuf.mtext);
 			timesliceEnd.seconds = data->sysTime.seconds;
 			timesliceEnd.ns = data->sysTime.ns;
 			AddTime(&timesliceEnd, QUEUE_BASE_TIME * 1000000);
+			printf("Timeslice to end at: %i:%i\n\n", timesliceEnd.seconds, timesliceEnd.ns);
 
 			pauseSent = 0;
 			procRunning = 1;
