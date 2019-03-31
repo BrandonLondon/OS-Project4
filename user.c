@@ -184,9 +184,8 @@ int main(int argc, int argv)
 		{
 			if(data->sysTime.seconds >= unblockTime.seconds && data->sysTime.ns >= unblockTime.ns)
 				break;
-
-			msgstatus = msgrcv(toChildQueue, &msgbuf, sizeof(msgbuf), getpid(), IPC_NOWAIT);
-			if(msgstatus > 0)
+				
+			if(msgrcv(toChildQueue, &msgbuf, sizeof(msgbuf), getpid(), IPC_NOWAIT) > 0)
 			{
 				msgbuf.mtype = getpid();
 				strcpy(msgbuf.mtext, "USED_PART 5");
