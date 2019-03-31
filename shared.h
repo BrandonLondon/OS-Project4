@@ -2,7 +2,7 @@
 
 #include <semaphore.h>
 
-#define MAX_PROCS 1
+#define MAX_PROCS 19
 
 typedef struct {
 	unsigned int seconds;

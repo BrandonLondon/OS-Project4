@@ -303,7 +303,7 @@ void DoSharedWork()
 
 			if((msgsize = msgrcv(toMasterQueue, &msgbuf, sizeof(msgbuf), data->proc[activeProcIndex].pid, IPC_NOWAIT)) > -1)
 			{
-				printf("RECIEVED MESSAGE IN MASTER MESSAGE QUEUE! %s\n\n", msgbuf.mtext);
+				//printf("RECIEVED MESSAGE IN MASTER MESSAGE QUEUE! %s\n\n", msgbuf.mtext);
 				if(strcmp(msgbuf.mtext, "USED_TERM") == 0)
 				{
 					printf("Proc dies!\n");
@@ -321,7 +321,7 @@ void DoSharedWork()
 					enqueue(priqueue, data->proc[FindPID(msgbuf.mtype)].loc_pid);
 					procRunning = 0;
 				}
-				printf("Is queue empty? %i Proccess running? %i", isEmpty(priqueue), procRunning);
+				//printf("Is queue empty? %i Proccess running? %i", isEmpty(priqueue), procRunning);
 			}
 		}
 
@@ -363,6 +363,7 @@ void DoSharedWork()
 
 		if (remainingExecs <= 0 && exitCount >= 100) //only get out of loop if we run out of execs or we have maxed out child count
 			break;
+		fflush(stdout);
 	}
 
 	shmctl(ipcid, IPC_RMID, NULL);

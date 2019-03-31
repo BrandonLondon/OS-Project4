@@ -13,8 +13,8 @@
 #include <sys/types.h>
 #include <sys/msg.h>
 
-const int CHANCE_TO_DIE_PERCENT = 0;
-const int CHANCE_TO_USE_ALL_TIME_PERCENT = 0;
+const int CHANCE_TO_DIE_PERCENT = 20;
+const int CHANCE_TO_USE_ALL_TIME_PERCENT = 50;
 
 Shared* data;
 int toChildQueue;
@@ -178,7 +178,6 @@ int main(int argc, int argv)
 
 		AddTimeSpec(&unblockTime, secstoadd, mstoadd); //set unblock time to some value seconds value 0-5 and 0-1000ms but converted to ns to make my life easier
 
-		//printf("Current Time: %i:%i    Unblock Time: %i:%i\n\n", data->sysTime.seconds, data->sysTime.ns, unblockTime.seconds, unblockTime.ns);
 		while(1)
 		{
 			if(data->sysTime.seconds >= unblockTime.seconds && data->sysTime.ns >= unblockTime.ns)
@@ -188,37 +187,18 @@ int main(int argc, int argv)
 			{
 				msgbuf.mtype = getpid();
 				strcpy(msgbuf.mtext, "USED_PART 5");
-				printf("SENDING TO MASTER!");
+				//printf("SENDING TO MASTER!");
 				msgsnd(toMasterQueue, &msgbuf, sizeof(msgbuf), 0);
-				printf("Message status: %i\n\n", msgstatus);
-				printf("Blocking task!");
+				//printf("Message status: %i\n\n", msgstatus);
+				//printf("Blocking task!");
 				msgrcv(toChildQueue, &msgbuf, sizeof(msgbuf), pid, 0);
-				printf("Resuming task! \n\n");
+				//printf("Resuming task! \n\n");
 			}
 		}
 
 			msgbuf.mtype = getpid();
 			strcpy(msgbuf.mtext, "USED_TERM");
-			msgsnd(toMasterQueue, &msgbuf, sizeof(msgbuf), 0);
-
-		/*{
-			if((msgstatus = msgrcv(toChildQueue, &msgbuf, sizeof(msgbuf), getpid(), 0)) > -1)
-			{
-				secstoadd = unblockTime.seconds - data->sysTime.seconds;
-				mstoadd = unblockTime.ns - data->sysTime.ns;
-
-				msgbuf.mtype = getpid();
-				strcpy(msgbuf.mtext, "USED_PART 5");
-				msgsnd(toMasterQueue, &msgbuf, sizeof(msgbuf), 0);
-
-				printf("Blocking task!");
-				msgstatus = msgrcv(toChildQueue, &msgbuf, sizeof(msgbuf), getpid(), 0);
-				printf("Resuming task! \n\n");
-				AddTimeSpec(&unblockTime, secstoadd, mstoadd);
-			}
-		}*/
-		printf("Child exit");//printf("Unblock ns: %i\n\n", unblockTime.ns);
-		//wait on some task and block
+			msgsnd(toMasterQueue, &msgbuf, sizeof(msgbuf), 0);	
 		exit(21);
 	}
 }
