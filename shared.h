@@ -12,7 +12,7 @@ typedef struct {
 typedef struct {
 	int priority;
 	int pid;
-    int loc_pid;
+	int loc_pid;
 	Time tCpuTime;
 	Time tSysTime;
 	Time tBurTime;

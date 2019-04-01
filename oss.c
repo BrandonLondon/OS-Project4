@@ -71,9 +71,9 @@ void Handler(int signal) //handle ctrl-c and timer hit
 	fflush(stdout);
 
 	int i;
-	for(i = 0; i < MAX_PROCS; i++)
-	    if(data->proc[i].pid != -1)
-	    	kill(data->proc[i].pid, SIGTERM);
+	for (i = 0; i < MAX_PROCS; i++)
+		if (data->proc[i].pid != -1)
+			kill(data->proc[i].pid, SIGTERM);
 
 	shmctl(ipcid, IPC_RMID, NULL); //free shared mem
 	msgctl(toChildQueue, IPC_RMID, NULL);
@@ -291,9 +291,9 @@ void DoSharedWork()
 			}
 		}
 
-		if(procRunning == 1)
+		if (procRunning == 1)
 		{
-			if(data->sysTime.seconds >= timesliceEnd.seconds && data->sysTime.ns >= timesliceEnd.ns && pauseSent == 0)
+			if (data->sysTime.seconds >= timesliceEnd.seconds && data->sysTime.ns >= timesliceEnd.ns && pauseSent == 0)
 			{
 				msgbuf.mtype = data->proc[activeProcIndex].pid;
 				strcpy(msgbuf.mtext, "");
@@ -301,21 +301,21 @@ void DoSharedWork()
 				pauseSent = 1;
 			}
 
-			if((msgsize = msgrcv(toMasterQueue, &msgbuf, sizeof(msgbuf), data->proc[activeProcIndex].pid, IPC_NOWAIT)) > -1)
+			if ((msgsize = msgrcv(toMasterQueue, &msgbuf, sizeof(msgbuf), data->proc[activeProcIndex].pid, IPC_NOWAIT)) > -1)
 			{
 				//printf("RECIEVED MESSAGE IN MASTER MESSAGE QUEUE! %s\n\n", msgbuf.mtext);
-				if(strcmp(msgbuf.mtext, "USED_TERM") == 0)
+				if (strcmp(msgbuf.mtext, "USED_TERM") == 0)
 				{
 					printf("Proc dies!\n");
 					procRunning = 0;
 				}
-				else if(strcmp(msgbuf.mtext, "USED_ALL") == 0)
+				else if (strcmp(msgbuf.mtext, "USED_ALL") == 0)
 				{
 					printf("Proc used all time!\n");
 					enqueue(priqueue, data->proc[FindPID(msgbuf.mtype)].loc_pid);
 					procRunning = 0;
 				}
-				else if(strcmp(msgbuf.mtext, "USED_PART 5") == 0)
+				else if (strcmp(msgbuf.mtext, "USED_PART 5") == 0)
 				{
 					printf("Proc used 5!\n");
 					enqueue(priqueue, data->proc[FindPID(msgbuf.mtype)].loc_pid);
@@ -325,7 +325,7 @@ void DoSharedWork()
 			}
 		}
 
-		if(isEmpty(priqueue) == 0 && procRunning == 0)
+		if (isEmpty(priqueue) == 0 && procRunning == 0)
 		{
 			//printf("Attemping to dequeue and start proccess...\n\n");
 			activeProcIndex = FindLocPID(dequeue(priqueue));
