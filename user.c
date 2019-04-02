@@ -13,8 +13,8 @@
 #include <sys/types.h>
 #include <sys/msg.h>
 
-const int CHANCE_TO_DIE_PERCENT = 50;
-const int CHANCE_TO_USE_ALL_TIME_PERCENT = 50;
+const int CHANCE_TO_DIE_PERCENT = 10;
+const int CHANCE_TO_USE_ALL_TIME_PERCENT = 90;
 
 Shared* data;
 int toChildQueue;
