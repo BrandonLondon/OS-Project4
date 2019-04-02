@@ -159,6 +159,16 @@ int main(int argc, int argv)
 			msgbuf.mtype = getpid();
 			strcpy(msgbuf.mtext, "USED_TERM");
 			msgsnd(toMasterQueue, &msgbuf, sizeof(msgbuf), 0);
+
+			int rngTimeUsed = (rand() % 99) + 1;
+			char* convert[15];
+			sprintf(convert, "%i", rngTimeUsed);
+			
+			msgbuf.mtype = pid;
+			strcpy(msgbuf.mtext, convert);
+			//printf("Sending with mtype %d and string %s\n", msgbuf.mtype, msgbuf.mtext);
+			msgsnd(toMasterQueue, &msgbuf, sizeof(msgbuf), 0);
+
 			exit(21);
 		}
 

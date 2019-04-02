@@ -314,6 +314,16 @@ void DoSharedWork()
 				if (strcmp(msgbuf.mtext, "USED_TERM") == 0)
 				{
 					printf("Proc dies!\n");
+					//printf("Proc used part. Blocking...", data->proc[activeProcIndex].pid);
+					msgrcv(toMasterQueue, &msgbuf, sizeof(msgbuf), data->proc[activeProcIndex].pid, 0);
+
+					int i;
+					sscanf(msgbuf.mtext, "%i", &i);	
+
+					int cost = (int)(((double)QUEUE_BASE_TIME * ((double)i/(double)100)) * (double)1000000);
+					printf("Proc only used %i of its time, cost: %i\n", i, cost);
+					AddTime(&(data->sysTime), cost);
+					
 					procRunning = 0;
 				}
 				else if (strcmp(msgbuf.mtext, "USED_ALL") == 0)
