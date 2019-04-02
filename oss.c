@@ -336,22 +336,22 @@ void DoSharedWork()
 					switch(data->proc[activeProcIndex].queueID)
 					{
 						case 0:
-							cost = (int)((double)queueCost0 * ((double)i/(double)100);
+							cost = (int)((double)queueCost0 * ((double)i/(double)100));
 							printf("Proc only used %i of its time, cost: %i\n", i, cost);
 							AddTime(&(data->sysTime), cost);
 							break;
 						case 1:
-							cost = (int)((double)queueCost1 * ((double)i/(double)100);
+							cost = (int)((double)queueCost1 * ((double)i/(double)100));
 							printf("Proc only used %i of its time, cost: %i\n", i, cost);
 							AddTime(&(data->sysTime), cost);
 							break;
 						case 2:
-							cost = (int)((double)queueCost2 * ((double)i/(double)100);
+							cost = (int)((double)queueCost2 * ((double)i/(double)100));
 							printf("Proc only used %i of its time, cost: %i\n", i, cost);
 							AddTime(&(data->sysTime), cost);
 							break;
 						case 3:
-							cost = (int)((double)queueCost3 * ((double)i/(double)100);
+							cost = (int)((double)queueCost3 * ((double)i/(double)100));
 							printf("Proc only used %i of its time, cost: %i\n", i, cost);
 							AddTime(&(data->sysTime), cost);
 							break;
@@ -407,22 +407,22 @@ void DoSharedWork()
 					switch(data->proc[activeProcIndex].queueID)
 					{
 						case 0:
-							cost = (int)((double)queueCost0 * ((double)i/(double)100);
+							cost = (int)((double)queueCost0 * ((double)i/(double)100));
 							printf("Proc only used %i of its time, cost: %i\n", i, cost);
 							AddTime(&(data->sysTime), cost);
 							break;
 						case 1:
-							cost = (int)((double)queueCost1 * ((double)i/(double)100);
+							cost = (int)((double)queueCost1 * ((double)i/(double)100));
 							printf("Proc only used %i of its time, cost: %i\n", i, cost);
 							AddTime(&(data->sysTime), cost);
 							break;
 						case 2:
-							cost = (int)((double)queueCost2 * ((double)i/(double)100);
+							cost = (int)((double)queueCost2 * ((double)i/(double)100));
 							printf("Proc only used %i of its time, cost: %i\n", i, cost);
 							AddTime(&(data->sysTime), cost);
 							break;
 						case 3:
-							cost = (int)((double)queueCost3 * ((double)i/(double)100);
+							cost = (int)((double)queueCost3 * ((double)i/(double)100));
 							printf("Proc only used %i of its time, cost: %i\n", i, cost);
 							AddTime(&(data->sysTime), cost);
 							break;
