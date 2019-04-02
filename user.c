@@ -199,7 +199,7 @@ int main(int argc, int argv)
 	
 				while(1) 
 				{
-					printf("Unblock time: %i:%i Current time: %i:%i", unblockTime.seconds, unblockTime.ns, data->sysTime.ns, data->sysTime.seconds);
+					printf("Unblock time: %i:%i Current time: %i:%i\n", unblockTime.seconds, unblockTime.ns, data->sysTime.ns, data->sysTime.seconds);
 					if (data->sysTime.seconds >= unblockTime.seconds && data->sysTime.ns >= unblockTime.ns)
 						break;
 				}
