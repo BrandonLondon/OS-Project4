@@ -67,7 +67,7 @@ void AddTimeSpec(Time* time, int sec, int nano)
 
 void Handler(int signal) //handle ctrl-c and timer hit
 {
-	printf("%s: Kill Signal Caught. Killing children and terminating...", filen);
+	//printf("%s: Kill Signal Caught. Killing children and terminating...", filen);
 	fflush(stdout);
 
 	int i;
@@ -90,7 +90,7 @@ void DoFork(int value) //do fun fork stuff here. I know, very useful comment.
 	}; //null terminated parameter array of chars
 
 	execv(forkarg[0], forkarg); //exec
-	printf("Exec failed! Aborting."); //all is lost. we couldn't fork. Blast.
+	//printf("Exec failed! Aborting."); //all is lost. we couldn't fork. Blast.
 	Handler(1);
 }
 
@@ -100,7 +100,7 @@ void ShmAttatch() //attach to shared memory
 
 	if (shmkey == -1) //check if the input file exists
 	{
-		printf("\n%s: ", filen);
+		//printf("\n%s: ", filen);
 		fflush(stdout);
 		perror("Error: Ftok failed");
 		return;
@@ -110,7 +110,7 @@ void ShmAttatch() //attach to shared memory
 
 	if (ipcid == -1) //check if the input file exists
 	{
-		printf("\n%s: ", filen);
+		//printf("\n%s: ", filen);
 		fflush(stdout);
 		perror("Error: failed to get shared memory");
 		return;
@@ -120,7 +120,7 @@ void ShmAttatch() //attach to shared memory
 
 	if (data == (void*)-1) //check if the input file exists
 	{
-		printf("\n%s: ", filen);
+		//printf("\n%s: ", filen);
 		fflush(stdout);
 		perror("Error: Failed to attach to shared memory");
 		return;
@@ -254,23 +254,23 @@ void DoSharedWork()
 				DoFork(pid); //do the fork thing with exec followup
 			}
 
-			printf("%s: PARENT: STARTING CHILD %i AT TIME SEC: %i NANO: %i\n", filen, pid, data->sysTime.seconds, data->sysTime.ns); //we are parent. We have made child at this time
+			//printf("%s: PARENT: STARTING CHILD %i AT TIME SEC: %i NANO: %i\n", filen, pid, data->sysTime.seconds, data->sysTime.ns); //we are parent. We have made child at this time
 
 			/* Setup the next exec for proccess*/
-			//printf("Before: %i %i\n\n", nextExec.seconds, nextExec.ns);
+			////printf("Before: %i %i\n\n", nextExec.seconds, nextExec.ns);
 			nextExec.seconds = data->sysTime.seconds;
 			nextExec.ns = data->sysTime.ns;
-			//printf("Current: %i %i\n\n", nextExec.seconds, nextExec.ns);
+			////printf("Current: %i %i\n\n", nextExec.seconds, nextExec.ns);
 
 			int secstoadd = abs(rand() % (MAX_TIME_BETWEEN_NEW_PROCS_SEC + 1));
 			int nstoadd = abs((rand() * rand()) % (MAX_TIME_BETWEEN_NEW_PROCS_NS + 1));
-			//printf("Adding: %i %i\n\n", secstoadd, nstoadd);
+			////printf("Adding: %i %i\n\n", secstoadd, nstoadd);
 			AddTimeSpec(&nextExec, secstoadd, nstoadd);
-			//printf("After: %i %i\n\n", nextExec.seconds, nextExec.ns);
+			////printf("After: %i %i\n\n", nextExec.seconds, nextExec.ns);
 
 			/* Test unit block
 						int failpoint = 0;
-						printf("FAIL? %i\n", failpoint++);
+						//printf("FAIL? %i\n", failpoint++);
 			*/
 			/* Setup child block if one exists */
 			int pos = FindEmptyProcBlock();
@@ -305,7 +305,7 @@ void DoSharedWork()
 			}
 			else
 			{
-				printf("%s: PARENT: CHILD FAILED TO FIND CONTROL BLOCK. TERMINATING CHILD\n\n");
+				//printf("%s: PARENT: CHILD FAILED TO FIND CONTROL BLOCK. TERMINATING CHILD\n\n");
 				kill(pid, SIGTERM);
 			}
 		}
@@ -322,11 +322,11 @@ void DoSharedWork()
 
 			if ((msgsize = msgrcv(toMasterQueue, &msgbuf, sizeof(msgbuf), data->proc[activeProcIndex].pid, 0)) > -1)
 			{
-				//printf("RECIEVED MESSAGE IN MASTER MESSAGE QUEUE! %s\n\n", msgbuf.mtext);
+				////printf("RECIEVED MESSAGE IN MASTER MESSAGE QUEUE! %s\n\n", msgbuf.mtext);
 				if (strcmp(msgbuf.mtext, "USED_TERM") == 0)
 				{
-					printf("Proc dies!\n");
-					//printf("Proc used part. Blocking...", data->proc[activeProcIndex].pid);
+					//printf("Proc dies!\n");
+					////printf("Proc used part. Blocking...", data->proc[activeProcIndex].pid);
 					msgrcv(toMasterQueue, &msgbuf, sizeof(msgbuf), data->proc[activeProcIndex].pid, 0);
 
 					int i;
@@ -337,34 +337,34 @@ void DoSharedWork()
 					{
 						case 0:
 							cost = (int)((double)queueCost0 * ((double)i/(double)100));
-							printf("Proc only used %i of its time, cost: %i\n", i, cost);
+							//printf("Proc only used %i of its time, cost: %i\n", i, cost);
 							AddTime(&(data->sysTime), cost);
 							break;
 						case 1:
 							cost = (int)((double)queueCost1 * ((double)i/(double)100));
-							printf("Proc only used %i of its time, cost: %i\n", i, cost);
+							//printf("Proc only used %i of its time, cost: %i\n", i, cost);
 							AddTime(&(data->sysTime), cost);
 							break;
 						case 2:
 							cost = (int)((double)queueCost2 * ((double)i/(double)100));
-							printf("Proc only used %i of its time, cost: %i\n", i, cost);
+							//printf("Proc only used %i of its time, cost: %i\n", i, cost);
 							AddTime(&(data->sysTime), cost);
 							break;
 						case 3:
 							cost = (int)((double)queueCost3 * ((double)i/(double)100));
-							printf("Proc only used %i of its time, cost: %i\n", i, cost);
+							//printf("Proc only used %i of its time, cost: %i\n", i, cost);
 							AddTime(&(data->sysTime), cost);
 							break;
 					}
 
-					printf("Proc only used %i of its time, cost: %i\n", i, cost);
+					//printf("Proc only used %i of its time, cost: %i\n", i, cost);
 					AddTime(&(data->sysTime), cost);
 
 					procRunning = 0;
 				}
 				else if (strcmp(msgbuf.mtext, "USED_ALL") == 0)
 				{
-					printf("Proc used all time!\n");
+					//printf("Proc used all time!\n");
 
 					switch(data->proc[activeProcIndex].queueID)
 					{
@@ -391,13 +391,13 @@ void DoSharedWork()
 					}
 					
 					/*This apparently costs more than calculating pi*/
-					//printf("Proc used all of its time, cost: %i\n", queueCost0);
+					////printf("Proc used all of its time, cost: %i\n", queueCost0);
 
 					procRunning = 0;
 				}
 				else if (strcmp(msgbuf.mtext, "USED_PART") == 0)
 				{
-					//printf("Proc used part. Blocking...", data->proc[activeProcIndex].pid);
+					////printf("Proc used part. Blocking...", data->proc[activeProcIndex].pid);
 					msgrcv(toMasterQueue, &msgbuf, sizeof(msgbuf), data->proc[activeProcIndex].pid, 0);
 
 					int i;
@@ -408,22 +408,22 @@ void DoSharedWork()
 					{
 						case 0:
 							cost = (int)((double)queueCost0 * ((double)i/(double)100));
-							printf("Proc only used %i of its time, cost: %i\n", i, cost);
+							//printf("Proc only used %i of its time, cost: %i\n", i, cost);
 							AddTime(&(data->sysTime), cost);
 							break;
 						case 1:
 							cost = (int)((double)queueCost1 * ((double)i/(double)100));
-							printf("Proc only used %i of its time, cost: %i\n", i, cost);
+							//printf("Proc only used %i of its time, cost: %i\n", i, cost);
 							AddTime(&(data->sysTime), cost);
 							break;
 						case 2:
 							cost = (int)((double)queueCost2 * ((double)i/(double)100));
-							printf("Proc only used %i of its time, cost: %i\n", i, cost);
+							//printf("Proc only used %i of its time, cost: %i\n", i, cost);
 							AddTime(&(data->sysTime), cost);
 							break;
 						case 3:
 							cost = (int)((double)queueCost3 * ((double)i/(double)100));
-							printf("Proc only used %i of its time, cost: %i\n", i, cost);
+							//printf("Proc only used %i of its time, cost: %i\n", i, cost);
 							AddTime(&(data->sysTime), cost);
 							break;
 					}
@@ -446,7 +446,7 @@ void DoSharedWork()
 				int blockedProcID = FindLocPID(dequeue(queueBlock));
 				if ((msgsize = msgrcv(toMasterQueue, &msgbuf, sizeof(msgbuf), data->proc[blockedProcID].pid, IPC_NOWAIT)) > -1 && strcmp(msgbuf.mtext, "USED_IO_DONE") == 0)
 				{
-					printf("Proc unblocked!\n");
+					//printf("Proc unblocked!\n");
 
 					if(data->proc[blockedProcID].realtime == 1)
 					{
@@ -460,7 +460,7 @@ void DoSharedWork()
 					}
 
 					int schedCost = ((rand() % 9900) + 100);
-					printf("Scheduler time cost to move to queue: %i\n", schedCost);
+					//printf("Scheduler time cost to move to queue: %i\n", schedCost);
 					AddTime(&(data->sysTime), schedCost);
 				}
 				else
@@ -473,7 +473,7 @@ void DoSharedWork()
 		if ((isEmpty(queue0) == 0 || isEmpty(queue1) == 0 || isEmpty(queue2) == 0 || isEmpty(queue3) == 0) && procRunning == 0)
 		{
 			int schedCost = ((rand() % 9900) + 100);
-			printf("Scheduler time cost: %i\n", schedCost);
+			//printf("Scheduler time cost: %i\n", schedCost);
 			AddTime(&(data->sysTime), schedCost);
 
 			if(isEmpty(queue0) == 0)
@@ -481,6 +481,7 @@ void DoSharedWork()
 				activeProcIndex = FindLocPID(dequeue(queue0));
 				msgbuf.mtype = data->proc[activeProcIndex].pid;
 				strcpy(msgbuf.mtext, "");
+				printf("Loading from queue 0");
 				msgsnd(toChildQueue, &msgbuf, sizeof(msgbuf), IPC_NOWAIT);
 			}
 			else if(isEmpty(queue1) == 0)
@@ -488,6 +489,7 @@ void DoSharedWork()
 				activeProcIndex = FindLocPID(dequeue(queue1));
 				msgbuf.mtype = data->proc[activeProcIndex].pid;
 				strcpy(msgbuf.mtext, "");
+				printf("Loading from queue 1");
 				msgsnd(toChildQueue, &msgbuf, sizeof(msgbuf), IPC_NOWAIT);
 			}
 			else if(isEmpty(queue2) == 0)
@@ -495,6 +497,7 @@ void DoSharedWork()
 				activeProcIndex = FindLocPID(dequeue(queue2));
 				msgbuf.mtype = data->proc[activeProcIndex].pid;
 				strcpy(msgbuf.mtext, "");
+				printf("Loading from queue 2");
 				msgsnd(toChildQueue, &msgbuf, sizeof(msgbuf), IPC_NOWAIT);
 			}
 			else if(isEmpty(queue3) == 0)
@@ -502,6 +505,7 @@ void DoSharedWork()
 				activeProcIndex = FindLocPID(dequeue(queue3));
 				msgbuf.mtype = data->proc[activeProcIndex].pid;
 				strcpy(msgbuf.mtext, "");
+				printf("Loading from queue 3");
 				msgsnd(toChildQueue, &msgbuf, sizeof(msgbuf), IPC_NOWAIT);
 			}
 
@@ -543,7 +547,6 @@ void QueueAttatch()
 
 	if (shmkey == -1) //check if the input file exists
 	{
-		printf("\n%s: ", filen);
 		fflush(stdout);
 		perror("Error: Ftok failed");
 		return;
@@ -553,7 +556,6 @@ void QueueAttatch()
 
 	if (toChildQueue == -1)
 	{
-		printf("\n%s: ", filen);
 		fflush(stdout);
 		perror("Error: toChildQueue creation failed");
 		return;
@@ -563,7 +565,6 @@ void QueueAttatch()
 
 	if (shmkey == -1) //check if the input file exists
 	{
-		printf("\n%s: ", filen);
 		fflush(stdout);
 		perror("Error: Ftok failed");
 		return;
@@ -573,7 +574,6 @@ void QueueAttatch()
 
 	if (toMasterQueue == -1)
 	{
-		printf("\n%s: ", filen);
 		fflush(stdout);
 		perror("Error: toMasterQueue creation failed");
 		return;
