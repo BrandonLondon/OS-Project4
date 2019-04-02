@@ -313,23 +313,23 @@ void DoSharedWork()
 				}
 				else if (strcmp(msgbuf.mtext, "USED_ALL") == 0)
 				{
-					printf("Proc used all time!\n");
+					//printf("Proc used all time!\n");
 					enqueue(queue0, data->proc[FindPID(msgbuf.mtype)].loc_pid);
 
-					printf("Proc used all of its time, cost: %i\n", (QUEUE_BASE_TIME * 1000000));
+					//printf("Proc used all of its time, cost: %i\n", (QUEUE_BASE_TIME * 1000000));
 					AddTime(&(data->sysTime), (QUEUE_BASE_TIME * 1000000));
 
 					procRunning = 0;
 				}
 				else if (strcmp(msgbuf.mtext, "USED_PART") == 0)
 				{
-					printf("Proc used part. Blocking...", data->proc[activeProcIndex].pid);
+					//printf("Proc used part. Blocking...", data->proc[activeProcIndex].pid);
 					msgrcv(toMasterQueue, &msgbuf, sizeof(msgbuf), data->proc[activeProcIndex].pid, 0);
 
 					int i;
 					sscanf(msgbuf.mtext, "%i", &i);	
 
-					printf("Proc only used %i of its time, cost: %i\n", i, (QUEUE_BASE_TIME * (i/100)) * 1000000);
+					//printf("Proc only used %i of its time, cost: %i\n", i, (QUEUE_BASE_TIME * (i/100)) * 1000000);
 					AddTime(&(data->sysTime), (QUEUE_BASE_TIME * (i/100)) * 1000000);
 	
 					enqueue(queueBlock, data->proc[FindPID(msgbuf.mtype)].loc_pid);
@@ -352,7 +352,7 @@ void DoSharedWork()
 				}
 				else
 				{
-					printf("Proc not ready to be unblocked...\n");
+					//printf("Proc not ready to be unblocked...\n");
 					enqueue(queueBlock, data->proc[blockedProcID].loc_pid);
 				}
 			}
@@ -361,7 +361,7 @@ void DoSharedWork()
 		if (isEmpty(queue0) == 0 && procRunning == 0)
 		{
 			int schedCost = ((rand() % 9900) + 100);
-			printf("Scheduler time cost: %i\n", schedCost);
+			//printf("Scheduler time cost: %i\n", schedCost);
 			AddTime(&(data->sysTime), schedCost);
 			//printf("Attemping to dequeue and start proccess...\n\n");
 			activeProcIndex = FindLocPID(dequeue(queue0));
