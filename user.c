@@ -192,16 +192,16 @@ int main(int argc, int argv)
 
 				msgbuf.mtype = pid;
 				strcpy(msgbuf.mtext, convert);
-				printf("Sending with mtype %d and string %s\n", msgbuf.mtype, msgbuf.mtext);
+				//printf("Sending with mtype %d and string %s\n", msgbuf.mtype, msgbuf.mtext);
 				fflush(stdout);
 				msgsnd(toMasterQueue, &msgbuf, sizeof(msgbuf), 0);
 
 	
-				while(1) 
+				/*while(1) 
 				{
 					if (data->sysTime.seconds >= unblockTime.seconds && data->sysTime.ns >= unblockTime.ns)
 						break;
-				}
+				}*/
 
 				msgbuf.mtype = pid;
 				strcpy(msgbuf.mtext, "USED_IO_DONE");
