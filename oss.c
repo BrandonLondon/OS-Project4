@@ -334,16 +334,20 @@ void DoSharedWork()
 
 		if(isEmpty(queueBlock) == 0)
 		{
-			int blockedProcID = FindLocPID(dequeue(queueBlock));
-			if ((msgsize = msgrcv(toMasterQueue, &msgbuf, sizeof(msgbuf), data->proc[blockedProcID].pid, IPC_NOWAIT)) > -1)
+			int t;
+			for(t = 0; t < MAX_PROCS; t++) //I realize this is slightly inefficient, but the alternatives are worse. This is simpler.
 			{
-				printf("Proc unblocked!\n");
-				enqueue(queue0, data->proc[blockedProcID].loc_pid);
-			}
-			else
-			{
-				printf("Proc not ready to be unblocked...\n");
-				enqueue(queueBlock, data->proc[blockedProcID].loc_pid);
+				int blockedProcID = FindLocPID(dequeue(queueBlock));
+				if ((msgsize = msgrcv(toMasterQueue, &msgbuf, sizeof(msgbuf), data->proc[blockedProcID].pid, IPC_NOWAIT)) > -1)
+				{
+					printf("Proc unblocked!\n");
+					enqueue(queue0, data->proc[blockedProcID].loc_pid);
+				}
+				else
+				{
+					printf("Proc not ready to be unblocked...\n");
+					enqueue(queueBlock, data->proc[blockedProcID].loc_pid);
+				}
 			}
 		}
 

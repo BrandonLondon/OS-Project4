@@ -14,7 +14,7 @@
 #include <sys/msg.h>
 
 const int CHANCE_TO_DIE_PERCENT = 10;
-const int CHANCE_TO_USE_ALL_TIME_PERCENT = 0;
+const int CHANCE_TO_USE_ALL_TIME_PERCENT = 80;
 
 Shared* data;
 int toChildQueue;
