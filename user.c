@@ -13,7 +13,7 @@
 #include <sys/types.h>
 #include <sys/msg.h>
 
-const int CHANCE_TO_DIE_PERCENT = 15;
+const int CHANCE_TO_DIE_PERCENT = 5;
 const int CHANCE_TO_USE_ALL_TIME_PERCENT = 100;
 
 Shared* data;

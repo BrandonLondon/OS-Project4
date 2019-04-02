@@ -218,6 +218,11 @@ void DoSharedWork()
 	struct Queue* queue0 = createQueue(MAX_PROCS); //toChildQueue of local PIDS (fake/emulated pids)
 	struct Queue* queueBlock = createQueue(MAX_PROCS);
 
+	int queueCost0 = QUEUE_BASE_TIME * 1000000;
+	int queueCost1 = QUEUE_BASE_TIME * 2 * 1000000;
+	int queueCost2 = QUEUE_BASE_TIME * 3 * 1000000;
+	int queueCost3 = QUEUE_BASE_TIME * 4 * 1000000;
+
 	/* Message tracking */
 	int pauseSent = 0;
 
@@ -313,11 +318,12 @@ void DoSharedWork()
 				}
 				else if (strcmp(msgbuf.mtext, "USED_ALL") == 0)
 				{
-					//printf("Proc used all time!\n");
+					printf("Proc used all time!\n");
 					enqueue(queue0, data->proc[FindPID(msgbuf.mtype)].loc_pid);
 
-					//printf("Proc used all of its time, cost: %i\n", (QUEUE_BASE_TIME * 1000000));
-					AddTime(&(data->sysTime), (QUEUE_BASE_TIME * 1000000));
+					/*This apparently costs more than calculating pi*/
+					//printf("Proc used all of its time, cost: %i\n", queueCost0);
+					AddTime(&(data->sysTime), queueCost0);
 
 					procRunning = 0;
 				}
@@ -366,7 +372,7 @@ void DoSharedWork()
 		if (isEmpty(queue0) == 0 && procRunning == 0)
 		{
 			int schedCost = ((rand() % 9900) + 100);
-			//printf("Scheduler time cost: %i\n", schedCost);
+			printf("Scheduler time cost: %i\n", schedCost);
 			AddTime(&(data->sysTime), schedCost);
 			//printf("Attemping to dequeue and start proccess...\n\n");
 			activeProcIndex = FindLocPID(dequeue(queue0));
@@ -374,12 +380,12 @@ void DoSharedWork()
 			strcpy(msgbuf.mtext, "");
 			msgsnd(toChildQueue, &msgbuf, sizeof(msgbuf), IPC_NOWAIT);
 			//printf("Started proccess, sending message with values: %i %s\n\n", msgbuf.mtype, msgbuf.mtext);
-			timesliceEnd.seconds = data->sysTime.seconds;
-			timesliceEnd.ns = data->sysTime.ns;
-			AddTime(&timesliceEnd, QUEUE_BASE_TIME * 1000000);
+			//timesliceEnd.seconds = data->sysTime.seconds;
+			//timesliceEnd.ns = data->sysTime.ns;
+			//AddTime(&timesliceEnd, QUEUE_BASE_TIME * 1000000);
 			//printf("Timeslice to end at: %i:%i\n\n", timesliceEnd.seconds, timesliceEnd.ns);
 
-			pauseSent = 0;
+			//pauseSent = 0;
 			procRunning = 1;
 		}
 
