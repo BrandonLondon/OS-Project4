@@ -293,15 +293,15 @@ void DoSharedWork()
 
 		if (procRunning == 1)
 		{
-			if (data->sysTime.seconds >= timesliceEnd.seconds && data->sysTime.ns >= timesliceEnd.ns && pauseSent == 0)
+/*			if (data->sysTime.seconds >= timesliceEnd.seconds && data->sysTime.ns >= timesliceEnd.ns && pauseSent == 0)
 			{
 				msgbuf.mtype = data->proc[activeProcIndex].pid;
 				strcpy(msgbuf.mtext, "");
 				msgsnd(toChildQueue, &msgbuf, sizeof(msgbuf), IPC_NOWAIT);
 				pauseSent = 1;
-			}
+			}*/
 
-			if ((msgsize = msgrcv(toMasterQueue, &msgbuf, sizeof(msgbuf), data->proc[activeProcIndex].pid, IPC_NOWAIT)) > -1)
+			if ((msgsize = msgrcv(toMasterQueue, &msgbuf, sizeof(msgbuf), data->proc[activeProcIndex].pid, 0)) > -1)
 			{
 				//printf("RECIEVED MESSAGE IN MASTER MESSAGE QUEUE! %s\n\n", msgbuf.mtext);
 				if (strcmp(msgbuf.mtext, "USED_TERM") == 0)
@@ -315,9 +315,15 @@ void DoSharedWork()
 					enqueue(priqueue, data->proc[FindPID(msgbuf.mtype)].loc_pid);
 					procRunning = 0;
 				}
-				else if (strcmp(msgbuf.mtext, "USED_PART 5") == 0)
+				else if (strcmp(msgbuf.mtext, "USED_PART") == 0)
 				{
-					printf("Proc used 5!\n");
+					printf("Proc used part...waiting on %!\n");
+					msgrcv(toMasterQueue, &msgbuf, sizeof(msgbuf), data->proc[activeProcIndex].pid, 0);
+
+					int i;
+					sscanf(msgbuf.mtext, "%i", &i);
+					
+	
 					enqueue(priqueue, data->proc[FindPID(msgbuf.mtype)].loc_pid);
 					procRunning = 0;
 				}

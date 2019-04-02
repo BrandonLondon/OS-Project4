@@ -13,8 +13,8 @@
 #include <sys/types.h>
 #include <sys/msg.h>
 
-const int CHANCE_TO_DIE_PERCENT = 20;
-const int CHANCE_TO_USE_ALL_TIME_PERCENT = 50;
+const int CHANCE_TO_DIE_PERCENT = 10;
+const int CHANCE_TO_USE_ALL_TIME_PERCENT = 100;
 
 Shared* data;
 int toChildQueue;
@@ -132,7 +132,7 @@ int main(int argc, int argv)
 
 	int pid = getpid();
 
-	int msgstatus = msgrcv(toChildQueue, &msgbuf, sizeof(msgbuf), pid, 0);
+	int msgstatus;
 
 	if (msgstatus == -1)
 	{
@@ -141,12 +141,20 @@ int main(int argc, int argv)
 		perror("Error: Failed to read message toChildQueue");
 		return;
 	}
-	printf("IM ALIVE!\t%i\n", pid);
+	printf("IM ALIVE! Setting up PID: \t%i\n", pid);
+
+	int secstoadd = 0;
+	int mstoadd = 0;
+	int runningIO = 0;
+	Time unblockTime;
+
+	srand(time(NULL) ^ (pid << 16));
 
 	while (1)
 	{
-		srand(time(NULL) ^ (getpid() << 16));
-		if ((rand() % 100) <= CHANCE_TO_DIE_PERCENT)
+		msgrcv(toChildQueue, &msgbuf, sizeof(msgbuf), pid, 0);	
+
+		if ((rand() % 100) <= CHANCE_TO_DIE_PERCENT && runningIO == 0)
 		{
 			msgbuf.mtype = getpid();
 			strcpy(msgbuf.mtext, "USED_TERM");
@@ -154,50 +162,51 @@ int main(int argc, int argv)
 			exit(21);
 		}
 
+
 		if ((rand() % 100) <= CHANCE_TO_USE_ALL_TIME_PERCENT)
 		{
-			//do {
 			msgbuf.mtype = getpid();
 			strcpy(msgbuf.mtext, "USED_ALL");
 			msgsnd(toMasterQueue, &msgbuf, sizeof(msgbuf), 0);
-			msgrcv(toChildQueue, &msgbuf, sizeof(msgbuf), getpid(), 0);
-			/*} while((rand() % 100) <= CHANCE_TO_DIE_PERCENT);
-
-			msgbuf.mtype = getpid();
-			strcpy(msgbuf.mtext, "USED_TERM");
-			msgsnd(toMasterQueue, &msgbuf, sizeof(msgbuf), 0);
-			exit(21);*/
 		}
 		else
 		{
 			printf("Using only part...\n\n");
-			Time unblockTime;
-			unblockTime.seconds = data->sysTime.seconds;
-			unblockTime.ns = data->sysTime.ns;
-			int secstoadd = rand() % 6;
-			int mstoadd = (rand() % 1001) * 1000000;
-
-			AddTimeSpec(&unblockTime, secstoadd, mstoadd); //set unblock time to some value seconds value 0-5 and 0-1000ms but converted to ns to make my life easier
-
-			while (1)
+			
+			if(runningIO == 0)
 			{
-				if (data->sysTime.seconds >= unblockTime.seconds && data->sysTime.ns >= unblockTime.ns)
-					break;
+				unblockTime.seconds = data->sysTime.seconds;
+				unblockTime.ns = data->sysTime.ns;
+				secstoadd = rand() % 6;
+				mstoadd = (rand() % 1001) * 1000000;
+				runningIO = 1;
+				AddTimeSpec(&unblockTime, secstoadd, mstoadd); //set unblock time to some value seconds value 0-5 and 0-1000ms but converted to ns to make my life easier
 
-				if (msgrcv(toChildQueue, &msgbuf, sizeof(msgbuf), pid, IPC_NOWAIT) > -1)
+				int rngTimeUsed = (rand() % 99) + 1;
+				msgbuf.mtype = pid;
+				strcpy(msgbuf.mtext, "USED_PART");
+				msgsnd(toMasterQueue, &msgbuf, sizeof(msgbuf), 0);
+
+				char* convert[15];
+				sprintf(convert, "%i", rngTimeUsed);
+
+				msgbuf.mtype = pid;
+				strcpy(msgbuf.mtext, convert);
+				msgsnd(toMasterQueue, &msgbuf, sizeof(msgbuf), 0);
+
+	
+				while(1) 
 				{
-					msgbuf.mtype = getpid();
-					strcpy(msgbuf.mtext, "USED_PART 5");
-					msgsnd(toMasterQueue, &msgbuf, sizeof(msgbuf), 0);
-					msgrcv(toChildQueue, &msgbuf, sizeof(msgbuf), pid, 0);
+					if (data->sysTime.seconds >= unblockTime.seconds && data->sysTime.ns >= unblockTime.ns)
+						break;
 				}
-			}
 
-			/*msgbuf.mtype = getpid();
-			  strcpy(msgbuf.mtext, "USED_TERM");
-			  msgsnd(toMasterQueue, &msgbuf, sizeof(msgbuf), 0);
-			  exit(21);
-			  */
+				msgbuf.mtype = pid;
+				strcpy(msgbuf.mtext, "USED_IO_DONE");
+				msgsnd(toMasterQueue, &msgbuf, sizeof(msgbuf), IPC_NOWAIT);
+			
+				runningIO = 0;
+			}
 		}
 	}
 }
