@@ -329,8 +329,13 @@ void DoSharedWork()
 					int i;
 					sscanf(msgbuf.mtext, "%i", &i);	
 
-					printf("Proc only used %i of its time, cost: %i\n", i, (QUEUE_BASE_TIME * (i/100)) * 1000000);
-					AddTime(&(data->sysTime), (QUEUE_BASE_TIME * (i/100)) * 1000000);
+					int cost = (int)(((double)QUEUE_BASE_TIME * ((double)i/(double)100)) * (double)1000000);
+					printf("Proc only used %i of its time, cost: %i\n", i, cost);
+					AddTime(&(data->sysTime), cost);
+
+					int schedCost = ((rand() % 9900) + 100);
+					printf("Scheduler time cost to move to queue: %i\n", schedCost);
+					AddTime(&(data->sysTime), schedCost);
 	
 					enqueue(queueBlock, data->proc[FindPID(msgbuf.mtype)].loc_pid);
 					procRunning = 0;
