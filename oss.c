@@ -329,7 +329,7 @@ void DoSharedWork()
 					int i;
 					sscanf(msgbuf.mtext, "%i", &i);	
 
-					printf("Proc only used \%%i of its time, cost: %i\n", (QUEUE_BASE_TIME * (i/100)) * 1000000);
+					printf("Proc only used %i of its time, cost: %i\n", i, (QUEUE_BASE_TIME * (i/100)) * 1000000);
 					AddTime(&(data->sysTime), (QUEUE_BASE_TIME * (i/100)) * 1000000);
 	
 					enqueue(queueBlock, data->proc[FindPID(msgbuf.mtype)].loc_pid);
