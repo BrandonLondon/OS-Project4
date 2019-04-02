@@ -348,6 +348,9 @@ void DoSharedWork()
 
 		if(isEmpty(queueBlock) == 0)
 		{
+			if(procRunning == 0)
+				AddTime(&(data->sysTime), 5000000);				
+
 			int t;
 			for(t = 0; t < getSize(queueBlock); t++) //I realize this is slightly inefficient, but the alternatives are worse. This is simpler.
 			{

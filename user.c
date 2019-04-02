@@ -13,8 +13,8 @@
 #include <sys/types.h>
 #include <sys/msg.h>
 
-const int CHANCE_TO_DIE_PERCENT = 5;
-const int CHANCE_TO_USE_ALL_TIME_PERCENT = 100;
+const int CHANCE_TO_DIE_PERCENT = 50;
+const int CHANCE_TO_USE_ALL_TIME_PERCENT = 50;
 
 Shared* data;
 int toChildQueue;
@@ -199,7 +199,7 @@ int main(int argc, int argv)
 	
 				while(1) 
 				{
-					printf("Unblock time: %i:%i Current time: %i:%i\n", unblockTime.seconds, unblockTime.ns, data->sysTime.ns, data->sysTime.seconds);
+					//printf("Unblock time: %i:%i Current time: %i:%i\n", unblockTime.seconds, unblockTime.ns, data->sysTime.ns, data->sysTime.seconds);
 					if (data->sysTime.seconds >= unblockTime.seconds && data->sysTime.ns >= unblockTime.ns)
 						break;
 				}
