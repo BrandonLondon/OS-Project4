@@ -14,7 +14,7 @@
 #include <sys/msg.h>
 
 const int CHANCE_TO_DIE_PERCENT = 10;
-const int CHANCE_TO_USE_ALL_TIME_PERCENT = 100;
+const int CHANCE_TO_USE_ALL_TIME_PERCENT = 0;
 
 Shared* data;
 int toChildQueue;
@@ -183,15 +183,17 @@ int main(int argc, int argv)
 				AddTimeSpec(&unblockTime, secstoadd, mstoadd); //set unblock time to some value seconds value 0-5 and 0-1000ms but converted to ns to make my life easier
 
 				int rngTimeUsed = (rand() % 99) + 1;
-				msgbuf.mtype = pid;
-				strcpy(msgbuf.mtext, "USED_PART");
-				msgsnd(toMasterQueue, &msgbuf, sizeof(msgbuf), 0);
-
 				char* convert[15];
 				sprintf(convert, "%i", rngTimeUsed);
 
 				msgbuf.mtype = pid;
+				strcpy(msgbuf.mtext, "USED_PART");
+				msgsnd(toMasterQueue, &msgbuf, sizeof(msgbuf), IPC_NOWAIT);
+
+				msgbuf.mtype = pid;
 				strcpy(msgbuf.mtext, convert);
+				printf("Sending with mtype %d and string %s\n", msgbuf.mtype, msgbuf.mtext);
+				fflush(stdout);
 				msgsnd(toMasterQueue, &msgbuf, sizeof(msgbuf), 0);
 
 	

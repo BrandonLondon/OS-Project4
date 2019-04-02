@@ -216,6 +216,7 @@ void DoSharedWork()
 
 	/* Create queues */
 	struct Queue* priqueue = createQueue(MAX_PROCS); //toChildQueue of local PIDS (fake/emulated pids)
+	struct Queue* blockqueue = createQueue(MAX_PROCS);
 
 	/* Message tracking */
 	int pauseSent = 0;
@@ -317,12 +318,11 @@ void DoSharedWork()
 				}
 				else if (strcmp(msgbuf.mtext, "USED_PART") == 0)
 				{
-					printf("Proc used part...waiting on %!\n");
+					printf("Proc used part...waiting on %!. Need %i to unlock...\n", data->proc[activeProcIndex].pid);
 					msgrcv(toMasterQueue, &msgbuf, sizeof(msgbuf), data->proc[activeProcIndex].pid, 0);
 
 					int i;
-					sscanf(msgbuf.mtext, "%i", &i);
-					
+					sscanf(msgbuf.mtext, "%i", &i);	
 	
 					enqueue(priqueue, data->proc[FindPID(msgbuf.mtype)].loc_pid);
 					procRunning = 0;
