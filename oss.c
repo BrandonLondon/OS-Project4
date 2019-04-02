@@ -24,7 +24,7 @@ const int MAX_TIME_BETWEEN_NEW_PROCS_NS = 150000;
 const int MAX_TIME_BETWEEN_NEW_PROCS_SEC = 0;
 const int SCHEDULER_CLOCK_ADD_INC = 10000;
 
-const int CHANCE_TO_BE_USER = 50;
+const int CHANCE_TO_BE_REALTIME = 50;
 const int QUEUE_BASE_TIME = 10; //in ms
 
 /* Create prototypes for used functions*/
@@ -216,6 +216,10 @@ void DoSharedWork()
 
 	/* Create queues */
 	struct Queue* queue0 = createQueue(MAX_PROCS); //toChildQueue of local PIDS (fake/emulated pids)
+	struct Queue* queue1 = createQueue(MAX_PROCS); //toChildQueue of local PIDS (fake/emulated pids)
+	struct Queue* queue2 = createQueue(MAX_PROCS); //toChildQueue of local PIDS (fake/emulated pids)
+	struct Queue* queue3 = createQueue(MAX_PROCS); //toChildQueue of local PIDS (fake/emulated pids)
+
 	struct Queue* queueBlock = createQueue(MAX_PROCS);
 
 	int queueCost0 = QUEUE_BASE_TIME * 1000000;
@@ -273,8 +277,7 @@ void DoSharedWork()
 			if (pos > -1)
 			{
 				data->proc[pos].pid = pid;
-				int userRoll = ((rand() % 100) < CHANCE_TO_BE_USER) ? 1 : 0;
-				data->proc[pos].priority = userRoll;
+				data->proc[pos].realtime = ((rand() % 100) < CHANCE_TO_BE_REALTIME) ? 1 : 0;
 
 				data->proc[pos].tCpuTime.seconds = 0;
 				data->proc[pos].tCpuTime.ns = 0;
@@ -287,7 +290,16 @@ void DoSharedWork()
 
 				data->proc[pos].loc_pid = ++locpidcnt;
 
-				enqueue(queue0, data->proc[pos].loc_pid);
+				if(data->proc[pos].realtime == 1)
+				{
+					data->proc[pos].queueID = 0;
+					enqueue(queue0, data->proc[pos].loc_pid);
+				}
+				else
+				{
+					data->proc[pos].queueID = 1;
+					enqueue(queue1, data->proc[pos].loc_pid);
+				}
 
 				activeProcs++; //increment active execs
 			}
@@ -319,21 +331,67 @@ void DoSharedWork()
 
 					int i;
 					sscanf(msgbuf.mtext, "%i", &i);	
+					int cost;
 
-					int cost = (int)(((double)QUEUE_BASE_TIME * ((double)i/(double)100)) * (double)1000000);
+					switch(data->proc[activeProcIndex].queueID)
+					{
+						case 0:
+							cost = (int)((double)queueCost0 * ((double)i/(double)100);
+							printf("Proc only used %i of its time, cost: %i\n", i, cost);
+							AddTime(&(data->sysTime), cost);
+							break;
+						case 1:
+							cost = (int)((double)queueCost1 * ((double)i/(double)100);
+							printf("Proc only used %i of its time, cost: %i\n", i, cost);
+							AddTime(&(data->sysTime), cost);
+							break;
+						case 2:
+							cost = (int)((double)queueCost2 * ((double)i/(double)100);
+							printf("Proc only used %i of its time, cost: %i\n", i, cost);
+							AddTime(&(data->sysTime), cost);
+							break;
+						case 3:
+							cost = (int)((double)queueCost3 * ((double)i/(double)100);
+							printf("Proc only used %i of its time, cost: %i\n", i, cost);
+							AddTime(&(data->sysTime), cost);
+							break;
+					}
+
 					printf("Proc only used %i of its time, cost: %i\n", i, cost);
 					AddTime(&(data->sysTime), cost);
-					
+
 					procRunning = 0;
 				}
 				else if (strcmp(msgbuf.mtext, "USED_ALL") == 0)
 				{
 					printf("Proc used all time!\n");
-					enqueue(queue0, data->proc[FindPID(msgbuf.mtype)].loc_pid);
 
+					switch(data->proc[activeProcIndex].queueID)
+					{
+						case 0:
+							enqueue(queue0, data->proc[FindPID(msgbuf.mtype)].loc_pid);
+							data->proc[FindPID(msgbuf.mtype)].queueID = 0;
+							AddTime(&(data->sysTime), queueCost0);
+							break;
+						case 1:
+							enqueue(queue2, data->proc[FindPID(msgbuf.mtype)].loc_pid);
+							data->proc[FindPID(msgbuf.mtype)].queueID = 2;
+							AddTime(&(data->sysTime), queueCost1);
+							break;
+						case 2:
+							enqueue(queue3, data->proc[FindPID(msgbuf.mtype)].loc_pid);
+							data->proc[FindPID(msgbuf.mtype)].queueID = 3;
+							AddTime(&(data->sysTime), queueCost2);
+							break;
+						case 3:
+							enqueue(queue3, data->proc[FindPID(msgbuf.mtype)].loc_pid);
+							data->proc[FindPID(msgbuf.mtype)].queueID = 3;
+							AddTime(&(data->sysTime), queueCost3);
+							break;
+					}
+					
 					/*This apparently costs more than calculating pi*/
 					//printf("Proc used all of its time, cost: %i\n", queueCost0);
-					AddTime(&(data->sysTime), queueCost0);
 
 					procRunning = 0;
 				}
@@ -344,10 +402,31 @@ void DoSharedWork()
 
 					int i;
 					sscanf(msgbuf.mtext, "%i", &i);	
+					int cost;
 
-					int cost = (int)(((double)QUEUE_BASE_TIME * ((double)i/(double)100)) * (double)1000000);
-					printf("Proc only used %i of its time, cost: %i\n", i, cost);
-					AddTime(&(data->sysTime), cost);
+					switch(data->proc[activeProcIndex].queueID)
+					{
+						case 0:
+							cost = (int)((double)queueCost0 * ((double)i/(double)100);
+							printf("Proc only used %i of its time, cost: %i\n", i, cost);
+							AddTime(&(data->sysTime), cost);
+							break;
+						case 1:
+							cost = (int)((double)queueCost1 * ((double)i/(double)100);
+							printf("Proc only used %i of its time, cost: %i\n", i, cost);
+							AddTime(&(data->sysTime), cost);
+							break;
+						case 2:
+							cost = (int)((double)queueCost2 * ((double)i/(double)100);
+							printf("Proc only used %i of its time, cost: %i\n", i, cost);
+							AddTime(&(data->sysTime), cost);
+							break;
+						case 3:
+							cost = (int)((double)queueCost3 * ((double)i/(double)100);
+							printf("Proc only used %i of its time, cost: %i\n", i, cost);
+							AddTime(&(data->sysTime), cost);
+							break;
+					}
 
 					enqueue(queueBlock, data->proc[FindPID(msgbuf.mtype)].loc_pid);
 					procRunning = 0;
@@ -359,7 +438,7 @@ void DoSharedWork()
 		if(isEmpty(queueBlock) == 0)
 		{
 			if(procRunning == 0)
-				AddTime(&(data->sysTime), 5000000);				
+				AddTime(&(data->sysTime), 5000000);	//No process is running. Hyperspeed until the next process is ready!			
 
 			int t;
 			for(t = 0; t < getSize(queueBlock); t++) //I realize this is slightly inefficient, but the alternatives are worse. This is simpler.
@@ -368,7 +447,17 @@ void DoSharedWork()
 				if ((msgsize = msgrcv(toMasterQueue, &msgbuf, sizeof(msgbuf), data->proc[blockedProcID].pid, IPC_NOWAIT)) > -1 && strcmp(msgbuf.mtext, "USED_IO_DONE") == 0)
 				{
 					printf("Proc unblocked!\n");
-					enqueue(queue0, data->proc[blockedProcID].loc_pid);
+
+					if(data->proc[blockedProcID].realtime == 1)
+					{
+						enqueue(queue0, data->proc[blockedProcID].loc_pid);
+						data->proc[blockedProcID].queueID = 0;
+					}
+					else
+					{
+						enqueue(queue1, data->proc[blockedProcID].loc_pid);
+						data->proc[blockedProcID].queueID = 1;
+					}
 
 					int schedCost = ((rand() % 9900) + 100);
 					printf("Scheduler time cost to move to queue: %i\n", schedCost);
@@ -376,29 +465,46 @@ void DoSharedWork()
 				}
 				else
 				{
-					//printf("Proc not ready to be unblocked...\n");
-					enqueue(queueBlock, data->proc[blockedProcID].loc_pid);
+					enqueue(queueBlock, data->proc[blockedProcID].loc_pid); //proc not ready to be unblocked
 				}
 			}
 		}
 
-		if (isEmpty(queue0) == 0 && procRunning == 0)
+		if ((isEmpty(queue0) == 0 || isEmpty(queue1) == 0 || isEmpty(queue2) == 0 || isEmpty(queue3) == 0) && procRunning == 0)
 		{
 			int schedCost = ((rand() % 9900) + 100);
 			printf("Scheduler time cost: %i\n", schedCost);
 			AddTime(&(data->sysTime), schedCost);
-			//printf("Attemping to dequeue and start proccess...\n\n");
-			activeProcIndex = FindLocPID(dequeue(queue0));
-			msgbuf.mtype = data->proc[activeProcIndex].pid;
-			strcpy(msgbuf.mtext, "");
-			msgsnd(toChildQueue, &msgbuf, sizeof(msgbuf), IPC_NOWAIT);
-			//printf("Started proccess, sending message with values: %i %s\n\n", msgbuf.mtype, msgbuf.mtext);
-			//timesliceEnd.seconds = data->sysTime.seconds;
-			//timesliceEnd.ns = data->sysTime.ns;
-			//AddTime(&timesliceEnd, QUEUE_BASE_TIME * 1000000);
-			//printf("Timeslice to end at: %i:%i\n\n", timesliceEnd.seconds, timesliceEnd.ns);
 
-			//pauseSent = 0;
+			if(isEmpty(queue0) == 0)
+			{
+				activeProcIndex = FindLocPID(dequeue(queue0));
+				msgbuf.mtype = data->proc[activeProcIndex].pid;
+				strcpy(msgbuf.mtext, "");
+				msgsnd(toChildQueue, &msgbuf, sizeof(msgbuf), IPC_NOWAIT);
+			}
+			else if(isEmpty(queue1) == 0)
+			{
+				activeProcIndex = FindLocPID(dequeue(queue1));
+				msgbuf.mtype = data->proc[activeProcIndex].pid;
+				strcpy(msgbuf.mtext, "");
+				msgsnd(toChildQueue, &msgbuf, sizeof(msgbuf), IPC_NOWAIT);
+			}
+			else if(isEmpty(queue2) == 0)
+			{
+				activeProcIndex = FindLocPID(dequeue(queue2));
+				msgbuf.mtype = data->proc[activeProcIndex].pid;
+				strcpy(msgbuf.mtext, "");
+				msgsnd(toChildQueue, &msgbuf, sizeof(msgbuf), IPC_NOWAIT);
+			}
+			else if(isEmpty(queue3) == 0)
+			{
+				activeProcIndex = FindLocPID(dequeue(queue3));
+				msgbuf.mtype = data->proc[activeProcIndex].pid;
+				strcpy(msgbuf.mtext, "");
+				msgsnd(toChildQueue, &msgbuf, sizeof(msgbuf), IPC_NOWAIT);
+			}
+
 			procRunning = 1;
 		}
 

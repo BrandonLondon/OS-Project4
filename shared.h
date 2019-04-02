@@ -10,7 +10,8 @@ typedef struct {
 } Time;
 
 typedef struct {
-	int priority;
+	int realtime;
+	int queueID;
 	int pid;
 	int loc_pid;
 	Time tCpuTime;
