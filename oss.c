@@ -319,7 +319,7 @@ void DoSharedWork()
 				}
 				else if (strcmp(msgbuf.mtext, "USED_PART") == 0)
 				{
-					printf("Proc used part...waiting on %!. Need %i to unlock...\n", data->proc[activeProcIndex].pid);
+					printf("Proc used part. Blocking...", data->proc[activeProcIndex].pid);
 					msgrcv(toMasterQueue, &msgbuf, sizeof(msgbuf), data->proc[activeProcIndex].pid, 0);
 
 					int i;
@@ -338,7 +338,7 @@ void DoSharedWork()
 			for(t = 0; t < getSize(queueBlock); t++) //I realize this is slightly inefficient, but the alternatives are worse. This is simpler.
 			{
 				int blockedProcID = FindLocPID(dequeue(queueBlock));
-				if ((msgsize = msgrcv(toMasterQueue, &msgbuf, sizeof(msgbuf), data->proc[blockedProcID].pid, IPC_NOWAIT)) > -1)
+				if ((msgsize = msgrcv(toMasterQueue, &msgbuf, sizeof(msgbuf), data->proc[blockedProcID].pid, IPC_NOWAIT)) > -1 && strcmp(msgbuf.mtext, "USED_IO_DONE") == 0)
 				{
 					printf("Proc unblocked!\n");
 					enqueue(queue0, data->proc[blockedProcID].loc_pid);
