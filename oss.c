@@ -215,8 +215,8 @@ void DoSharedWork()
 	timesliceEnd.ns = 0;
 
 	/* Create queues */
-	struct Queue* priqueue = createQueue(MAX_PROCS); //toChildQueue of local PIDS (fake/emulated pids)
-	struct Queue* blockqueue = createQueue(MAX_PROCS);
+	struct Queue* queue0 = createQueue(MAX_PROCS); //toChildQueue of local PIDS (fake/emulated pids)
+	struct Queue* queueBlock = createQueue(MAX_PROCS);
 
 	/* Message tracking */
 	int pauseSent = 0;
@@ -228,6 +228,7 @@ void DoSharedWork()
 
 		pid_t pid; //pid temp
 		int usertracker = -1; //updated by userready to the position of ready struct to be launched
+
 		if (remainingExecs > 0 && activeProcs < MAX_PROCS && (data->sysTime.seconds >= nextExec.seconds) && (data->sysTime.ns >= nextExec.ns))
 		{
 			pid = fork(); //the mircle of proccess creation
@@ -281,7 +282,7 @@ void DoSharedWork()
 
 				data->proc[pos].loc_pid = ++locpidcnt;
 
-				enqueue(priqueue, data->proc[pos].loc_pid);
+				enqueue(queue0, data->proc[pos].loc_pid);
 
 				activeProcs++; //increment active execs
 			}
@@ -313,7 +314,7 @@ void DoSharedWork()
 				else if (strcmp(msgbuf.mtext, "USED_ALL") == 0)
 				{
 					printf("Proc used all time!\n");
-					enqueue(priqueue, data->proc[FindPID(msgbuf.mtype)].loc_pid);
+					enqueue(queue0, data->proc[FindPID(msgbuf.mtype)].loc_pid);
 					procRunning = 0;
 				}
 				else if (strcmp(msgbuf.mtext, "USED_PART") == 0)
@@ -324,17 +325,32 @@ void DoSharedWork()
 					int i;
 					sscanf(msgbuf.mtext, "%i", &i);	
 	
-					enqueue(priqueue, data->proc[FindPID(msgbuf.mtype)].loc_pid);
+					enqueue(queueBlock, data->proc[FindPID(msgbuf.mtype)].loc_pid);
 					procRunning = 0;
 				}
-				//printf("Is queue empty? %i Proccess running? %i", isEmpty(priqueue), procRunning);
+				//printf("Is queue empty? %i Proccess running? %i", isEmpty(queue0), procRunning);
 			}
 		}
 
-		if (isEmpty(priqueue) == 0 && procRunning == 0)
+		if(isEmpty(queueBlock) == 0)
+		{
+			int blockedProcID = FindLocPID(dequeue(queueBlock));
+			if ((msgsize = msgrcv(toMasterQueue, &msgbuf, sizeof(msgbuf), data->proc[blockedProcID].pid, IPC_NOWAIT)) > -1)
+			{
+				printf("Proc unblocked!\n");
+				enqueue(queue0, data->proc[blockedProcID].loc_pid);
+			}
+			else
+			{
+				printf("Proc not ready to be unblocked...\n");
+				enqueue(queueBlock, data->proc[blockedProcID].loc_pid);
+			}
+		}
+
+		if (isEmpty(queue0) == 0 && procRunning == 0)
 		{
 			//printf("Attemping to dequeue and start proccess...\n\n");
-			activeProcIndex = FindLocPID(dequeue(priqueue));
+			activeProcIndex = FindLocPID(dequeue(queue0));
 			msgbuf.mtype = data->proc[activeProcIndex].pid;
 			strcpy(msgbuf.mtext, "");
 			msgsnd(toChildQueue, &msgbuf, sizeof(msgbuf), IPC_NOWAIT);
