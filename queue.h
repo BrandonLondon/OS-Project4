@@ -24,6 +24,11 @@ struct Queue* createQueue(unsigned capacity)
 	return queue;
 }
 
+int getSize(struct Queue* queue)
+{
+	return queue->size;
+}
+
 // Queue is full when size becomes equal to the capacity  
 int isFull(struct Queue* queue)
 {
