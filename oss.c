@@ -356,7 +356,7 @@ void DoSharedWork()
 
 		if (isEmpty(queue0) == 0 && procRunning == 0)
 		{
-			int schedCost = (rand() % 9900) + 100);
+			int schedCost = ((rand() % 9900) + 100);
 			printf("Scheduler time cost: %i\n", schedCost);
 			AddTime(&(data->sysTime), schedCost);
 			//printf("Attemping to dequeue and start proccess...\n\n");
