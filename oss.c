@@ -25,7 +25,7 @@ const int MAX_TIME_BETWEEN_NEW_PROCS_SEC = 0;
 const int SCHEDULER_CLOCK_ADD_INC = 10000;
 
 const int CHANCE_TO_BE_USER = 50;
-const int QUEUE_BASE_TIME = 10;
+const int QUEUE_BASE_TIME = 10; //in ms
 
 /* Create prototypes for used functions*/
 void Handler(int signal);
@@ -315,6 +315,10 @@ void DoSharedWork()
 				{
 					printf("Proc used all time!\n");
 					enqueue(queue0, data->proc[FindPID(msgbuf.mtype)].loc_pid);
+
+					printf("Proc used all of its time, cost: %i\n", (QUEUE_BASE_TIME * 1000000));
+					AddTime(&(data->sysTime), (QUEUE_BASE_TIME * 1000000));
+
 					procRunning = 0;
 				}
 				else if (strcmp(msgbuf.mtext, "USED_PART") == 0)
