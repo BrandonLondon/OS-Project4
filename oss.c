@@ -333,10 +333,6 @@ void DoSharedWork()
 					printf("Proc only used %i of its time, cost: %i\n", i, cost);
 					AddTime(&(data->sysTime), cost);
 
-					int schedCost = ((rand() % 9900) + 100);
-					printf("Scheduler time cost to move to queue: %i\n", schedCost);
-					AddTime(&(data->sysTime), schedCost);
-	
 					enqueue(queueBlock, data->proc[FindPID(msgbuf.mtype)].loc_pid);
 					procRunning = 0;
 				}
@@ -354,6 +350,10 @@ void DoSharedWork()
 				{
 					printf("Proc unblocked!\n");
 					enqueue(queue0, data->proc[blockedProcID].loc_pid);
+
+					int schedCost = ((rand() % 9900) + 100);
+					printf("Scheduler time cost to move to queue: %i\n", schedCost);
+					AddTime(&(data->sysTime), schedCost);
 				}
 				else
 				{
