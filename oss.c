@@ -20,6 +20,9 @@ int toChildQueue;
 int toMasterQueue;
 int locpidcnt = 0;
 char* filen; //name of this executable
+
+FILE* o;
+
 const int MAX_TIME_BETWEEN_NEW_PROCS_NS = 150000;
 const int MAX_TIME_BETWEEN_NEW_PROCS_SEC = 0;
 const int SCHEDULER_CLOCK_ADD_INC = 10000;
@@ -75,6 +78,8 @@ void Handler(int signal) //handle ctrl-c and timer hit
 		if (data->proc[i].pid != -1)
 			kill(data->proc[i].pid, SIGTERM);
 
+	fflush(o);
+	fclose(o);
 	shmctl(ipcid, IPC_RMID, NULL); //free shared mem
 	msgctl(toChildQueue, IPC_RMID, NULL);
 	msgctl(toMasterQueue, IPC_RMID, NULL);
@@ -294,11 +299,14 @@ void DoSharedWork()
 				{
 					data->proc[pos].queueID = 0;
 					enqueue(queue0, data->proc[pos].loc_pid);
+					fprintf(o, "%s: [%i:%i] [PROC CREATE] [PID: %i] LOC_PID: %i INTO QUEUE: 0\n", filen, data->sysTime.seconds, data->sysTime.ns, data->proc[activeProcIndex].pid, data->proc[activeProcIndex].loc_pid);
+
 				}
 				else
 				{
 					data->proc[pos].queueID = 1;
 					enqueue(queue1, data->proc[pos].loc_pid);
+					fprintf(o, "%s: [%i:%i] [PROC CREATE] [PID: %i] LOC_PID: %i INTO QUEUE: 0\n", filen, data->sysTime.seconds, data->sysTime.ns, data->proc[activeProcIndex].pid, data->proc[activeProcIndex].loc_pid);
 				}
 
 				activeProcs++; //increment active execs
@@ -338,21 +346,26 @@ void DoSharedWork()
 						case 0:
 							cost = (int)((double)queueCost0 * ((double)i/(double)100));
 							//printf("Proc only used %i of its time, cost: %i\n", i, cost);
+							fprintf(o, "\t%s: [%i:%i] [TERMINATE] [PID: %i] LOC_PID: %i AFTER %iNS\n\n", filen, data->sysTime.seconds, data->sysTime.ns, data->proc[activeProcIndex].pid, data->proc[activeProcIndex].loc_pid, cost);
+	
 							AddTime(&(data->sysTime), cost);
 							break;
 						case 1:
 							cost = (int)((double)queueCost1 * ((double)i/(double)100));
 							//printf("Proc only used %i of its time, cost: %i\n", i, cost);
+							fprintf(o, "\t%s: [%i:%i] [TERMINATE] [PID: %i] LOC_PID: %i AFTER %iNS\n\n", filen, data->sysTime.seconds, data->sysTime.ns, data->proc[activeProcIndex].pid, data->proc[activeProcIndex].loc_pid, cost);	
 							AddTime(&(data->sysTime), cost);
 							break;
 						case 2:
 							cost = (int)((double)queueCost2 * ((double)i/(double)100));
 							//printf("Proc only used %i of its time, cost: %i\n", i, cost);
+							fprintf(o, "\t%s: [%i:%i] [TERMINATE] [PID: %i] LOC_PID: %i AFTER %iNS\n\n", filen, data->sysTime.seconds, data->sysTime.ns, data->proc[activeProcIndex].pid, data->proc[activeProcIndex].loc_pid, cost);
 							AddTime(&(data->sysTime), cost);
 							break;
 						case 3:
 							cost = (int)((double)queueCost3 * ((double)i/(double)100));
 							//printf("Proc only used %i of its time, cost: %i\n", i, cost);
+							fprintf(o, "\t%s: [%i:%i] [TERMINATE] [PID: %i] LOC_PID: %i AFTER %iNS\n\n", filen, data->sysTime.seconds, data->sysTime.ns, data->proc[activeProcIndex].pid, data->proc[activeProcIndex].loc_pid, cost);
 							AddTime(&(data->sysTime), cost);
 							break;
 					}
@@ -372,20 +385,24 @@ void DoSharedWork()
 							enqueue(queue0, data->proc[FindPID(msgbuf.mtype)].loc_pid);
 							data->proc[FindPID(msgbuf.mtype)].queueID = 0;
 							AddTime(&(data->sysTime), queueCost0);
+							fprintf(o, "\t%s: [%i:%i] [QUEUE SHIFT 0 -> 0] [PID: %i] LOC_PID: %i\n\n", filen, data->sysTime.seconds, data->sysTime.ns, data->proc[activeProcIndex].pid, data->proc[activeProcIndex].loc_pid);
 							break;
 						case 1:
 							enqueue(queue2, data->proc[FindPID(msgbuf.mtype)].loc_pid);
 							data->proc[FindPID(msgbuf.mtype)].queueID = 2;
+							fprintf(o, "\t%s: [%i:%i] [QUEUE SHIFT 1 -> 2] [PID: %i] LOC_PID: %i\n\n", filen, data->sysTime.seconds, data->sysTime.ns, data->proc[activeProcIndex].pid, data->proc[activeProcIndex].loc_pid);
 							AddTime(&(data->sysTime), queueCost1);
 							break;
 						case 2:
 							enqueue(queue3, data->proc[FindPID(msgbuf.mtype)].loc_pid);
 							data->proc[FindPID(msgbuf.mtype)].queueID = 3;
+							fprintf(o, "\t%s: [%i:%i] [QUEUE SHIFT 2 -> 3] [PID: %i] LOC_PID: %i\n\n", filen, data->sysTime.seconds, data->sysTime.ns, data->proc[activeProcIndex].pid, data->proc[activeProcIndex].loc_pid);	
 							AddTime(&(data->sysTime), queueCost2);
 							break;
 						case 3:
 							enqueue(queue3, data->proc[FindPID(msgbuf.mtype)].loc_pid);
 							data->proc[FindPID(msgbuf.mtype)].queueID = 3;
+							fprintf(o, "\t%s: [%i:%i] [QUEUE SHIFT 3 -> 3] [PID: %i] LOC_PID: %i QUEUE: 3\n\n", filen, data->sysTime.seconds, data->sysTime.ns, data->proc[activeProcIndex].pid, data->proc[activeProcIndex].loc_pid);	
 							AddTime(&(data->sysTime), queueCost3);
 							break;
 					}
@@ -409,21 +426,25 @@ void DoSharedWork()
 						case 0:
 							cost = (int)((double)queueCost0 * ((double)i/(double)100));
 							//printf("Proc only used %i of its time, cost: %i\n", i, cost);
+							fprintf(o, "\t%s: [%i:%i] [BLOCKED] [PID: %i] LOC_PID: %i AFTER %iNS\n\n", filen, data->sysTime.seconds, data->sysTime.ns, data->proc[activeProcIndex].pid, data->proc[activeProcIndex].loc_pid, cost);
 							AddTime(&(data->sysTime), cost);
 							break;
 						case 1:
 							cost = (int)((double)queueCost1 * ((double)i/(double)100));
 							//printf("Proc only used %i of its time, cost: %i\n", i, cost);
+							fprintf(o, "\t%s: [%i:%i] [BLOCKED] [PID: %i] LOC_PID: %i AFTER %iNS\n\n", filen, data->sysTime.seconds, data->sysTime.ns, data->proc[activeProcIndex].pid, data->proc[activeProcIndex].loc_pid, cost);
 							AddTime(&(data->sysTime), cost);
 							break;
 						case 2:
 							cost = (int)((double)queueCost2 * ((double)i/(double)100));
 							//printf("Proc only used %i of its time, cost: %i\n", i, cost);
+							fprintf(o, "\t%s: [%i:%i] [BLOCKED] [PID: %i] LOC_PID: %i AFTER %iNS\n\n", filen, data->sysTime.seconds, data->sysTime.ns, data->proc[activeProcIndex].pid, data->proc[activeProcIndex].loc_pid, cost);
 							AddTime(&(data->sysTime), cost);
 							break;
 						case 3:
 							cost = (int)((double)queueCost3 * ((double)i/(double)100));
 							//printf("Proc only used %i of its time, cost: %i\n", i, cost);
+							fprintf(o, "\t%s: [%i:%i] [BLOCKED] [PID: %i] LOC_PID: %i AFTER %iNS\n\n", filen, data->sysTime.seconds, data->sysTime.ns, data->proc[activeProcIndex].pid, data->proc[activeProcIndex].loc_pid, cost);
 							AddTime(&(data->sysTime), cost);
 							break;
 					}
@@ -473,7 +494,6 @@ void DoSharedWork()
 		if ((isEmpty(queue0) == 0 || isEmpty(queue1) == 0 || isEmpty(queue2) == 0 || isEmpty(queue3) == 0) && procRunning == 0)
 		{
 			int schedCost = ((rand() % 9900) + 100);
-			//printf("Scheduler time cost: %i\n", schedCost);
 			AddTime(&(data->sysTime), schedCost);
 
 			if(isEmpty(queue0) == 0)
@@ -481,7 +501,7 @@ void DoSharedWork()
 				activeProcIndex = FindLocPID(dequeue(queue0));
 				msgbuf.mtype = data->proc[activeProcIndex].pid;
 				strcpy(msgbuf.mtext, "");
-				printf("Loading from queue 0");
+				fprintf(o, "%s: [%i:%i] [Dispatch] [PID: %i] LOC_PID: %i QUEUE: 0\n", filen, data->sysTime.seconds, data->sysTime.ns, data->proc[activeProcIndex].pid, data->proc[activeProcIndex].loc_pid);
 				msgsnd(toChildQueue, &msgbuf, sizeof(msgbuf), IPC_NOWAIT);
 			}
 			else if(isEmpty(queue1) == 0)
@@ -489,7 +509,8 @@ void DoSharedWork()
 				activeProcIndex = FindLocPID(dequeue(queue1));
 				msgbuf.mtype = data->proc[activeProcIndex].pid;
 				strcpy(msgbuf.mtext, "");
-				printf("Loading from queue 1");
+				fprintf(o, "%s: [%i:%i] [Dispatch] [PID: %i] LOC_PID: %i QUEUE: 1\n", filen, data->sysTime.seconds, data->sysTime.ns, data->proc[activeProcIndex].pid, data->proc[activeProcIndex].loc_pid);
+				//printf("Loading from queue 1");
 				msgsnd(toChildQueue, &msgbuf, sizeof(msgbuf), IPC_NOWAIT);
 			}
 			else if(isEmpty(queue2) == 0)
@@ -497,7 +518,8 @@ void DoSharedWork()
 				activeProcIndex = FindLocPID(dequeue(queue2));
 				msgbuf.mtype = data->proc[activeProcIndex].pid;
 				strcpy(msgbuf.mtext, "");
-				printf("Loading from queue 2");
+				fprintf(o, "%s: [%i:%i] [Dispatch] [PID: %i] LOC_PID: %i QUEUE: 2\n", filen, data->sysTime.seconds, data->sysTime.ns, data->proc[activeProcIndex].pid, data->proc[activeProcIndex].loc_pid);
+				//printf("Loading from queue 2");
 				msgsnd(toChildQueue, &msgbuf, sizeof(msgbuf), IPC_NOWAIT);
 			}
 			else if(isEmpty(queue3) == 0)
@@ -505,7 +527,8 @@ void DoSharedWork()
 				activeProcIndex = FindLocPID(dequeue(queue3));
 				msgbuf.mtype = data->proc[activeProcIndex].pid;
 				strcpy(msgbuf.mtext, "");
-				printf("Loading from queue 3");
+				fprintf(o, "%s: [%i:%i] [Dispatch] [PID: %i] LOC_PID: %i QUEUE: 3\n", filen, data->sysTime.seconds, data->sysTime.ns, data->proc[activeProcIndex].pid, data->proc[activeProcIndex].loc_pid);
+				//printf("Loading from queue 3");
 				msgsnd(toChildQueue, &msgbuf, sizeof(msgbuf), IPC_NOWAIT);
 			}
 
@@ -539,6 +562,8 @@ void DoSharedWork()
 	shmctl(ipcid, IPC_RMID, NULL);
 	msgctl(toChildQueue, IPC_RMID, NULL);
 	msgctl(toMasterQueue, IPC_RMID, NULL);
+	fflush(o);
+	fclose(o);
 }
 
 void QueueAttatch()
@@ -594,6 +619,8 @@ int main(int argc, int** argv)
 		perror("Failed to setup ITIMER_PROF interval timer");
 		return 1;
 	}
+
+	o = fopen("output.log", "w");
 
 	ShmAttatch(); //attach to shared mem
 	QueueAttatch();

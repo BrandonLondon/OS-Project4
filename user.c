@@ -141,7 +141,7 @@ int main(int argc, int argv)
 		perror("Error: Failed to read message toChildQueue");
 		return;
 	}
-	printf("IM ALIVE! Setting up PID: \t%i\n", pid);
+	//printf("IM ALIVE! Setting up PID: \t%i\n", pid);
 
 	int secstoadd = 0;
 	int mstoadd = 0;
@@ -181,7 +181,7 @@ int main(int argc, int argv)
 		}
 		else
 		{
-			printf("Using only part...\n\n");
+			//printf("Using only part...\n\n");
 			
 			if(runningIO == 0)
 			{
