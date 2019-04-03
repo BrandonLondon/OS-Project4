@@ -620,14 +620,17 @@ void DoSharedWork()
 				
 					int position = FindPID(pid);
 
-										
+					data->proc[position].tWaitTime.seconds = data->proc[position].tSysTime.seconds;
+ 					data->proc[position].tWaitTime.ns = data->proc[position].tSysTime.ns;
 
-									
-						
+					SubTime(&(data->proc[position].tWaitTime), &(data->proc[position].tCpuTime));
+  					SubTime(&(data->proc[position].tWaitTime), &(data->proc[position].tBlockedTime));				
+					printf("/**TIME STATS FOR LOC_PID: %i**/\n\tCPU Time: %i:%i\n\tWait Time: %i:%i\n\tBlocked Time: %i:%i\n\t--------------------------\n\tTotal Time: %i:%i\n\n", data->proc[position].loc_pid, data->proc[position].tCpuTime.seconds, data->proc[position].tCpuTime.ns, data->proc[position].tWaitTime.seconds, data->proc[position].tWaitTime.ns, data->proc[position].tBlockedTime.seconds, data->proc[position].tBlockedTime.ns, data->proc[position].tSysTime.seconds, data->proc[position].tSysTime.ns);					
+	
 					if (position > -1)
 						data->proc[position].pid = -1;
 
-					printf("%s: CHILD PID: %i: (LOC_PID: %i)RIP. fun while it lasted: %i sec %i nano.\n", filen, pid, data->proc[position].loc_pid, data->sysTime.seconds, data->sysTime.ns);
+					//printf("%s: CHILD PID: %i: (LOC_PID: %i)RIP. fun while it lasted: %i sec %i nano.\n", filen, pid, data->proc[position].loc_pid, data->sysTime.seconds, data->sysTime.ns);
 				}
 			}
 		}
