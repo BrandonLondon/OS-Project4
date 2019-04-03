@@ -259,14 +259,16 @@ void DoSharedWork()
 	data->sysTime.ns = 0;
 
 	/* Setup time for random child spawning */
-	Time nextExec;
-	nextExec.seconds = 0;
-	nextExec.ns = 0;
+	Time nextExec = {0,0};
 
 	/* Setup proccess timeslice */
-	Time timesliceEnd;
-	timesliceEnd.seconds = 0;
-	timesliceEnd.ns = 0;
+	Time timesliceEnd = {0,0};
+
+	/* Time Statistics */
+        Time totalCpuTime = {0,0};
+	Time totalWaitTime = {0,0};
+	Time totalBlockedTime = {0,0};	
+	Time totalTime = {0,0};
 
 	/* Create queues */
 	struct Queue* queue0 = createQueue(MAX_PROCS); //toChildQueue of local PIDS (fake/emulated pids)
@@ -390,7 +392,8 @@ void DoSharedWork()
 					sscanf(msgbuf.mtext, "%i", &i);	
 					int cost;
 
-					SubTime(&(data->proc[activeProcIndex].tSysTime), &(data->sysTime));	//calculate total time in system
+					printf("[LOC_PID: %i] Time Finished: %i:%i, Time Started: %i:%i\n", data->proc[activeProcIndex].loc_pid, data->sysTime.seconds, data->sysTime.ns, data->proc[activeProcIndex].tSysTime.seconds, data->proc[activeProcIndex].tSysTime.ns);
+					SubTimeOutput(&(data->sysTime), &(data->proc[activeProcIndex].tSysTime), &(data->proc[activeProcIndex].tSysTime));	//calculate total time in system
 					
 					//printf("%i time in system %i:%i\n", data->proc[activeProcIndex].loc_pid, data->proc[activeProcIndex].tSysTime.seconds, data->proc[activeProcIndex].tSysTime.ns);
 					switch(data->proc[activeProcIndex].queueID)
@@ -625,7 +628,7 @@ void DoSharedWork()
 
 					SubTime(&(data->proc[position].tWaitTime), &(data->proc[position].tCpuTime));
   					SubTime(&(data->proc[position].tWaitTime), &(data->proc[position].tBlockedTime));				
-					printf("/**TIME STATS FOR LOC_PID: %i**/\n\tCPU Time: %i:%i\n\tWait Time: %i:%i\n\tBlocked Time: %i:%i\n\t--------------------------\n\tTotal Time: %i:%i\n\n", data->proc[position].loc_pid, data->proc[position].tCpuTime.seconds, data->proc[position].tCpuTime.ns, data->proc[position].tWaitTime.seconds, data->proc[position].tWaitTime.ns, data->proc[position].tBlockedTime.seconds, data->proc[position].tBlockedTime.ns, data->proc[position].tSysTime.seconds, data->proc[position].tSysTime.ns);					
+					printf("/**TIME STATS FOR LOC_PID: %i**/\n\tCPU Time: %i:%i\n\tWait Time: %i:%i\n\tBlocked Time: %i:%i\n\t--------------------------\n\n", data->proc[position].loc_pid, data->proc[position].tCpuTime.seconds, data->proc[position].tCpuTime.ns, data->proc[position].tWaitTime.seconds, data->proc[position].tWaitTime.ns, data->proc[position].tBlockedTime.seconds, data->proc[position].tBlockedTime.ns);					
 	
 					if (position > -1)
 						data->proc[position].pid = -1;
