@@ -266,7 +266,7 @@ void DoSharedWork()
 
 	/* Time Statistics */
         Time totalCpuTime = {0,0};
-	Time totalWaitTime = {0,0};
+	Time totalWaitTime = {0, 0};
 	Time totalBlockedTime = {0,0};	
 	Time totalTime = {0,0};
 
@@ -632,7 +632,8 @@ void DoSharedWork()
 					AddTime(&(totalCpuTime), &(data->proc[position].tCpuTime));
 					AddTime(&(totalWaitTime), &(data->proc[position].tWaitTime));
 					AddTime(&(totalBlockedTime), &(data->proc[position].tBlockedTime));
-
+					
+					printf("%i %i %i", totalCpuTime.seconds, totalWaitTime.seconds, totalBlockedTime.seconds);
 					if (position > -1)
 						data->proc[position].pid = -1;
 
@@ -650,7 +651,7 @@ void DoSharedWork()
 		fflush(stdout);
 	}
 
-	printf("/** AVERAGES **/\n\tTotal Time: %i:%i\n\tCPU Time: %i:%i\n\tWait Time: %i:%i\n\tBlocked Time: %i:%i\n\t--------------------\n\n", totalTime.seconds, totalTime.ns, totalCpuTime.seconds, totalCpuTime.ns, totalWaitTime.seconds, totalWaitTime.ns, totalBlockedTime.seconds, totalBlockedTime.ns);
+	printf("/** AVERAGE TIMES **/\n\tTotal Time: %i:%i\n\tCPU Time: %i:%i\n\tWait Time: %i:%i\n\tBlocked Time: %i:%i\n\t--------------------\n\n", totalTime.seconds, totalTime.ns, totalCpuTime.seconds, totalCpuTime.ns, totalWaitTime.seconds, totalWaitTime.ns, totalBlockedTime.seconds, totalBlockedTime.ns);
 
 	shmctl(ipcid, IPC_RMID, NULL);
 	msgctl(toChildQueue, IPC_RMID, NULL);
