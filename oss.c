@@ -629,11 +629,11 @@ void DoSharedWork()
 					SubTime(&(data->proc[position].tWaitTime), &(data->proc[position].tCpuTime));
   					SubTime(&(data->proc[position].tWaitTime), &(data->proc[position].tBlockedTime));				
 					printf("/**TIME STATS FOR LOC_PID: %i**/\n\tCPU Time: %i:%i\n\tWait Time: %i:%i\n\tBlocked Time: %i:%i\n\t--------------------------\n\n", data->proc[position].loc_pid, data->proc[position].tCpuTime.seconds, data->proc[position].tCpuTime.ns, data->proc[position].tWaitTime.seconds, data->proc[position].tWaitTime.ns, data->proc[position].tBlockedTime.seconds, data->proc[position].tBlockedTime.ns);					
-					AddTime(&(totalCpuTime), &(data->proc[position].tCpuTime));
-					AddTime(&(totalWaitTime), &(data->proc[position].tWaitTime));
-					AddTime(&(totalBlockedTime), &(data->proc[position].tBlockedTime));
+					AddTimeLong(&(totalCpuTime), ((long)(data->proc[position].tCpuTime.seconds * 1000000000)) + data->proc[position].tCpuTime.ns);
+					AddTimeLong(&(totalWaitTime), ((long)(data->proc[position].tWaitTime.seconds) * 1000000000) + data->proc[position].tWaitTime.ns);
+					AddTimeLong(&(totalBlockedTime), ((long)(data->proc[position].tBlockedTime.seconds) * 1000000000) + data->proc[position].tBlockedTime.ns);
 					
-					printf("%i %i %i", totalCpuTime.seconds, totalWaitTime.seconds, totalBlockedTime.seconds);
+					//printf("%i %i %i", totalCpuTime.seconds, totalWaitTime.seconds, totalBlockedTime.seconds);
 					if (position > -1)
 						data->proc[position].pid = -1;
 
