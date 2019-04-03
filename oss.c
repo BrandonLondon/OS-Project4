@@ -45,6 +45,9 @@ void AddTime(Time* time, int amount);
 int FindPID(int pid);
 int FindLocPID(int pid);
 void QueueAttatch();
+void AddTimeLong(Time* time, long amount);
+void SubTime(Time* time, Time* time2);
+void SubTimeOutput(Time* time, Time* time2, Time* out);
 
 struct {
 	long mtype;
@@ -66,6 +69,52 @@ void AddTimeSpec(Time* time, int sec, int nano)
 {
 	time->seconds += sec;
 	AddTime(time, nano);
+}
+
+void AddTimeLong(Time* time, long amount)
+{
+	long newnano = time->ns + amount;
+	while (newnano >= 1000000000) //nano = 10^9, so keep dividing until we get to something less and increment seconds
+	{
+		newnano -= 1000000000;
+		(time->seconds)++;
+	}
+	time->ns = (int)newnano;
+}
+
+void SubTime(Time* time, Time* time2)
+{
+	long epochTime1 = (time->seconds * 1000000000) + (time->ns);
+	long epochTime2 = (time2->seconds * 1000000000) + (time2->ns);
+
+	long epochTimeDiff = abs(epochTime1 - epochTime2);
+
+	Time temp;
+	temp.seconds = 0;
+	temp.ns = 0;
+
+	AddTimeLong(&temp, epochTimeDiff);
+	
+	time->seconds = temp.seconds;
+	time->ns = temp.ns;
+}
+
+
+void SubTimeOutput(Time* time, Time* time2, Time* out)
+{
+	long epochTime1 = (time->seconds * 1000000000) + (time->ns);
+	long epochTime2 = (time2->seconds * 1000000000) + (time2->ns);
+
+	long epochTimeDiff = abs(epochTime1 - epochTime2);
+
+	Time temp;
+	temp.seconds = 0;
+	temp.ns = 0;
+
+	AddTimeLong(&temp, epochTimeDiff);
+	
+	out->seconds = temp.seconds;
+	out->ns = temp.ns;
 }
 
 void Handler(int signal) //handle ctrl-c and timer hit
@@ -290,8 +339,8 @@ void DoSharedWork()
 				data->proc[pos].tSysTime.seconds = data->sysTime.seconds;
 				data->proc[pos].tSysTime.ns = data->sysTime.ns;
 
-				data->proc[pos].tBurTime.seconds = 0;
-				data->proc[pos].tBurTime.ns = 0;
+				data->proc[pos].tBlockedTime.seconds = 0;
+				data->proc[pos].tBlockedTime.ns = 0;
 
 				data->proc[pos].loc_pid = ++locpidcnt;
 
@@ -341,6 +390,9 @@ void DoSharedWork()
 					sscanf(msgbuf.mtext, "%i", &i);	
 					int cost;
 
+					SubTime(&(data->proc[activeProcIndex].tSysTime), &(data->sysTime));	//calculate total time in system
+					
+					//printf("%i time in system %i:%i\n", data->proc[activeProcIndex].loc_pid, data->proc[activeProcIndex].tSysTime.seconds, data->proc[activeProcIndex].tSysTime.ns);
 					switch(data->proc[activeProcIndex].queueID)
 					{
 						case 0:
@@ -565,8 +617,13 @@ void DoSharedWork()
 				{
 					exitCount++;
 					activeProcs--;
-
+				
 					int position = FindPID(pid);
+
+										
+
+									
+						
 					if (position > -1)
 						data->proc[position].pid = -1;
 

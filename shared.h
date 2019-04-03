@@ -16,7 +16,8 @@ typedef struct {
 	int loc_pid;
 	Time tCpuTime;
 	Time tSysTime;
-	Time tBurTime;
+	Time tBlockedTime;
+	Time tWaitTime;
 } ProcBlock;
 
 typedef struct {

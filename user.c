@@ -203,6 +203,8 @@ int main(int argc, int argv)
 				mstoadd = (rand() % 1001) * 1000000;
 				runningIO = 1;
 				AddTimeSpec(&unblockTime, secstoadd, mstoadd); //set unblock time to some value seconds value 0-5 and 0-1000ms but converted to ns to make my life easier
+				
+				AddTimeSpec(&(data->proc[FindPID(pid)].tBlockedTime), secstoadd, mstoadd);
 
 				int rngTimeUsed = (rand() % 99) + 1;
 				char* convert[15];
