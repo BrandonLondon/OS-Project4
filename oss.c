@@ -629,7 +629,10 @@ void DoSharedWork()
 					SubTime(&(data->proc[position].tWaitTime), &(data->proc[position].tCpuTime));
   					SubTime(&(data->proc[position].tWaitTime), &(data->proc[position].tBlockedTime));				
 					printf("/**TIME STATS FOR LOC_PID: %i**/\n\tCPU Time: %i:%i\n\tWait Time: %i:%i\n\tBlocked Time: %i:%i\n\t--------------------------\n\n", data->proc[position].loc_pid, data->proc[position].tCpuTime.seconds, data->proc[position].tCpuTime.ns, data->proc[position].tWaitTime.seconds, data->proc[position].tWaitTime.ns, data->proc[position].tBlockedTime.seconds, data->proc[position].tBlockedTime.ns);					
-	
+					AddTime(&(totalCpuTime), &(data->proc[position].tCpuTime));
+					AddTime(&(totalWaitTime), &(data->proc[position].tWaitTime));
+					AddTime(&(totalBlockedTime), &(data->proc[position].tBlockedTime));
+
 					if (position > -1)
 						data->proc[position].pid = -1;
 
@@ -639,9 +642,15 @@ void DoSharedWork()
 		}
 
 		if (remainingExecs <= 0 && exitCount >= 100) //only get out of loop if we run out of execs or we have maxed out child count
+		{	
+			totalTime.seconds = data->sysTime.seconds;
+			totalTime.ns = data->sysTime.ns;
 			break;
+		}
 		fflush(stdout);
 	}
+
+	printf("/** AVERAGES **/\n\tTotal Time: %i:%i\n\tCPU Time: %i:%i\n\tWait Time: %i:%i\n\tBlocked Time: %i:%i\n\t--------------------\n\n", totalTime.seconds, totalTime.ns, totalCpuTime.seconds, totalCpuTime.ns, totalWaitTime.seconds, totalWaitTime.ns, totalBlockedTime.seconds, totalBlockedTime.ns);
 
 	shmctl(ipcid, IPC_RMID, NULL);
 	msgctl(toChildQueue, IPC_RMID, NULL);
