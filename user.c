@@ -13,7 +13,7 @@
 #include <sys/types.h>
 #include <sys/msg.h>
 
-const int CHANCE_TO_DIE_PERCENT = 10;
+int CHANCE_TO_DIE_PERCENT = 10;
 const int CHANCE_TO_USE_ALL_TIME_PERCENT = 90;
 
 Shared* data;
@@ -26,11 +26,21 @@ void ShmAttatch();
 void QueueAttatch();
 void AddTime(Time* time, int amount);
 void AddTimeSpec(Time* time, int sec, int nano);
+int FindPID(int pid);
 
 struct {
 	long mtype;
 	char mtext[100];
 } msgbuf;
+
+int FindPID(int pid)
+{
+	int i;
+	for (i = 0; i < MAX_PROCS; i++)
+		if (data->proc[i].pid == pid)
+			return i;
+	return -1;
+}
 
 void AddTime(Time* time, int amount)
 {
@@ -131,6 +141,8 @@ int main(int argc, int argv)
 	QueueAttatch();
 
 	int pid = getpid();
+
+	CHANCE_TO_DIE_PERCENT = (data->proc[FindPID(pid)].realtime == 1) ? CHANCE_TO_DIE_PERCENT * 2 : CHANCE_TO_DIE_PERCENT;
 
 	int msgstatus;
 

@@ -24,7 +24,7 @@ char* filen; //name of this executable
 FILE* o;
 
 const int MAX_TIME_BETWEEN_NEW_PROCS_NS = 150000;
-const int MAX_TIME_BETWEEN_NEW_PROCS_SEC = 0;
+const int MAX_TIME_BETWEEN_NEW_PROCS_SEC = 1;
 const int SCHEDULER_CLOCK_ADD_INC = 10000;
 
 const int CHANCE_TO_BE_REALTIME = 50;
@@ -371,7 +371,7 @@ void DoSharedWork()
 					}
 
 					//printf("Proc only used %i of its time, cost: %i\n", i, cost);
-					AddTime(&(data->sysTime), cost);
+					//AddTime(&(data->sysTime), cost);
 
 					procRunning = 0;
 				}
