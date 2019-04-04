@@ -13,6 +13,13 @@
 #include <sys/types.h>
 #include <sys/msg.h>
 
+/*
+*	Author: Vasyl Onufriyev
+*	Project 4: Message queues and Process Scheduling
+*	Date: 3/4/19
+*	Purpose: User process that is managed by oss, will either terminate, use all time, or begin an IO operation which blocks and returns a certain amount of time
+*/
+
 int CHANCE_TO_DIE_PERCENT = 10;
 const int CHANCE_TO_USE_ALL_TIME_PERCENT = 90;
 

@@ -14,6 +14,13 @@
 #include "shared.h"
 #include "string.h"
 
+/*
+*	Author: Vasyl Onufriyev
+*	Project 4: Message queues and Process Scheduling
+*	Date: 3/4/19
+*	Purpose: To manage user proccesses and schedule them using message queues
+*/
+
 int ipcid; //inter proccess shared memory
 Shared* data; //shared memory data
 int toChildQueue; //queue for communicating to child from master
