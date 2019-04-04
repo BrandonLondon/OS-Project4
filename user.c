@@ -164,7 +164,7 @@ int main(int argc, int argv)
 
 	while (1)
 	{
-		msgrcv(toChildQueue, &msgbuf, sizeof(msgbuf), pid, 0);	
+		msgrcv(toChildQueue, &msgbuf, sizeof(msgbuf), pid, 0);
 
 		if ((rand() % 100) <= CHANCE_TO_DIE_PERCENT && runningIO == 0)
 		{
@@ -175,7 +175,7 @@ int main(int argc, int argv)
 			int rngTimeUsed = (rand() % 99) + 1;
 			char* convert[15];
 			sprintf(convert, "%i", rngTimeUsed);
-			
+
 			msgbuf.mtype = pid;
 			strcpy(msgbuf.mtext, convert);
 			//printf("Sending with mtype %d and string %s\n", msgbuf.mtype, msgbuf.mtext);
@@ -194,8 +194,8 @@ int main(int argc, int argv)
 		else
 		{
 			//printf("Using only part...\n\n");
-			
-			if(runningIO == 0)
+
+			if (runningIO == 0)
 			{
 				unblockTime.seconds = data->sysTime.seconds;
 				unblockTime.ns = data->sysTime.ns;
@@ -203,7 +203,7 @@ int main(int argc, int argv)
 				mstoadd = (rand() % 1001) * 1000000;
 				runningIO = 1;
 				AddTimeSpec(&unblockTime, secstoadd, mstoadd); //set unblock time to some value seconds value 0-5 and 0-1000ms but converted to ns to make my life easier
-				
+
 				AddTimeSpec(&(data->proc[FindPID(pid)].tBlockedTime), secstoadd, mstoadd);
 
 				int rngTimeUsed = (rand() % 99) + 1;
@@ -220,8 +220,8 @@ int main(int argc, int argv)
 				fflush(stdout);
 				msgsnd(toMasterQueue, &msgbuf, sizeof(msgbuf), 0);
 
-	
-				while(1) 
+
+				while (1)
 				{
 					//printf("Unblock time: %i:%i Current time: %i:%i\n", unblockTime.seconds, unblockTime.ns, data->sysTime.ns, data->sysTime.seconds);
 					if (data->sysTime.seconds >= unblockTime.seconds && data->sysTime.ns >= unblockTime.ns)
@@ -231,7 +231,7 @@ int main(int argc, int argv)
 				msgbuf.mtype = pid;
 				strcpy(msgbuf.mtext, "USED_IO_DONE");
 				msgsnd(toMasterQueue, &msgbuf, sizeof(msgbuf), IPC_NOWAIT);
-			
+
 				runningIO = 0;
 			}
 		}
