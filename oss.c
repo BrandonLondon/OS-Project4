@@ -761,7 +761,8 @@ int main(int argc, int** argv)
 		return 1;
 	}
 
-	while ((int optionItem = getopt(argc, argv, "hn:")) != -1) //read option list
+	int optionItem;
+	while ((optionItem = getopt(argc, argv, "hn:")) != -1) //read option list
 	{
 		switch (optionItem)
 		{
