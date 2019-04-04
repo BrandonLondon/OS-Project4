@@ -392,10 +392,10 @@ void DoSharedWork()
 			{
 				if (strcmp(msgbuf.mtext, "USED_TERM") == 0) //child decides to die
 				{
-					msgrcv(toMasterQueue, &msgbuf, sizeof(msgbuf), data->proc[activeProcIndex].pid, 0);
+					msgrcv(toMasterQueue, &msgbuf, sizeof(msgbuf), data->proc[activeProcIndex].pid, 0); //After we recieve signal that child used term, wait for the child to send its percentage
 
 					int i;
-					sscanf(msgbuf.mtext, "%i", &i);
+					sscanf(msgbuf.mtext, "%i", &i); //convert from string to int
 					int cost;
 
 					printf("[LOC_PID: %i] Time Finished: %i:%i, Time Started: %i:%i\n", data->proc[activeProcIndex].loc_pid, data->sysTime.seconds, data->sysTime.ns, data->proc[activeProcIndex].tSysTime.seconds, data->proc[activeProcIndex].tSysTime.ns);
@@ -468,10 +468,10 @@ void DoSharedWork()
 				}
 				else if (strcmp(msgbuf.mtext, "USED_PART") == 0)
 				{
-					msgrcv(toMasterQueue, &msgbuf, sizeof(msgbuf), data->proc[activeProcIndex].pid, 0);
+					msgrcv(toMasterQueue, &msgbuf, sizeof(msgbuf), data->proc[activeProcIndex].pid, 0); //After we recieve signal that we used part, wait for the child to send its percentage
 
 					int i;
-					sscanf(msgbuf.mtext, "%i", &i);
+					sscanf(msgbuf.mtext, "%i", &i); //convert from string to int
 					int cost;
 
 					switch (data->proc[activeProcIndex].queueID) //depending on what queue it was in, we must increment a different amount of time, this is the logic for that.
@@ -514,20 +514,19 @@ void DoSharedWork()
 				AddTime(&(data->sysTime), 5000000);	//No process is running. Hyperspeed until the next process is ready!			
 
 			int t;
+			/* Loop through all blocked entries, return them to mainstream quques if unblocked, else keep them blocked */
 			for (t = 0; t < getSize(queueBlock); t++) //I realize this is slightly inefficient, but the alternatives are worse. This is simpler.
 			{
-				int blockedProcID = FindLocPID(dequeue(queueBlock));
-				if ((msgsize = msgrcv(toMasterQueue, &msgbuf, sizeof(msgbuf), data->proc[blockedProcID].pid, IPC_NOWAIT)) > -1 && strcmp(msgbuf.mtext, "USED_IO_DONE") == 0)
+				int blockedProcID = FindLocPID(dequeue(queueBlock)); //get next element from blocked queue
+				if ((msgsize = msgrcv(toMasterQueue, &msgbuf, sizeof(msgbuf), data->proc[blockedProcID].pid, IPC_NOWAIT)) > -1 && strcmp(msgbuf.mtext, "USED_IO_DONE") == 0) //async check if there was a message from pid
 				{
-					//printf("Proc unblocked!\n");
-
-					if (data->proc[blockedProcID].realtime == 1)
+					if (data->proc[blockedProcID].realtime == 1) // if the proccess was realtime, return it back to the realtime queue (queue 0)
 					{
 						enqueue(queue0, data->proc[blockedProcID].loc_pid);
 						data->proc[blockedProcID].queueID = 0;
 						fprintf(o, "%s: [%i:%i] [UNBLOCKED] [PID: %i] LOC_PID: %i TO QUEUE: 0\n", filen, data->sysTime.seconds, data->sysTime.ns, data->proc[blockedProcID].pid, data->proc[blockedProcID].loc_pid);
 					}
-					else
+					else //otherwise, it is a user proccess, throw it in with the rest of the users in queue 1
 					{
 						enqueue(queue1, data->proc[blockedProcID].loc_pid);
 						data->proc[blockedProcID].queueID = 1;
@@ -535,8 +534,7 @@ void DoSharedWork()
 					}
 
 					int schedCost = ((rand() % 9900) + 100);
-					//printf("Scheduler time cost to move to queue: %i\n", schedCost);
-					AddTime(&(data->sysTime), schedCost);
+					AddTime(&(data->sysTime), schedCost); //simulate scheduling cost to the system
 
 					fprintf(o, "\t%s: [%i:%i] [SCHEDULER] [PID: %i] LOC_PID: %i COST TO MOVE: %iNS\n\n", filen, data->sysTime.seconds, data->sysTime.ns, data->proc[blockedProcID].pid, data->proc[blockedProcID].loc_pid, schedCost);
 				}
@@ -547,51 +545,50 @@ void DoSharedWork()
 			}
 		}
 
+		/* if there is something in one of the queues and no proccess running, let's get a proccess running */
 		if ((isEmpty(queue0) == 0 || isEmpty(queue1) == 0 || isEmpty(queue2) == 0 || isEmpty(queue3) == 0) && procRunning == 0)
 		{
-			if (isEmpty(queue0) == 0)
+			if (isEmpty(queue0) == 0) //there is something in queue 0, we are traversing these queues in the order of importance
 			{
-				activeProcIndex = FindLocPID(dequeue(queue0));
+				activeProcIndex = FindLocPID(dequeue(queue0)); //dequeue the proccess
 				msgbuf.mtype = data->proc[activeProcIndex].pid;
 				strcpy(msgbuf.mtext, "");
 				fprintf(o, "%s: [%i:%i] [DISPATCH] [PID: %i] LOC_PID: %i QUEUE: 0\n", filen, data->sysTime.seconds, data->sysTime.ns, data->proc[activeProcIndex].pid, data->proc[activeProcIndex].loc_pid);
-				msgsnd(toChildQueue, &msgbuf, sizeof(msgbuf), IPC_NOWAIT);
+				msgsnd(toChildQueue, &msgbuf, sizeof(msgbuf), IPC_NOWAIT); //wake the child
 			}
-			else if (isEmpty(queue1) == 0)
+			else if (isEmpty(queue1) == 0) //there is something in queue 1 but not queue 0
 			{
-				activeProcIndex = FindLocPID(dequeue(queue1));
+				activeProcIndex = FindLocPID(dequeue(queue1)); //dequeue the proccess
 				msgbuf.mtype = data->proc[activeProcIndex].pid;
 				strcpy(msgbuf.mtext, "");
 				fprintf(o, "%s: [%i:%i] [DISPATCH] [PID: %i] LOC_PID: %i QUEUE: 1\n", filen, data->sysTime.seconds, data->sysTime.ns, data->proc[activeProcIndex].pid, data->proc[activeProcIndex].loc_pid);
-				msgsnd(toChildQueue, &msgbuf, sizeof(msgbuf), IPC_NOWAIT);
+				msgsnd(toChildQueue, &msgbuf, sizeof(msgbuf), IPC_NOWAIT); //wake the child
 			}
-			else if (isEmpty(queue2) == 0)
+			else if (isEmpty(queue2) == 0) //there is something in queue 2 but not in 1 or 0
 			{
-				activeProcIndex = FindLocPID(dequeue(queue2));
+				activeProcIndex = FindLocPID(dequeue(queue2)); //dequeue the proccess
 				msgbuf.mtype = data->proc[activeProcIndex].pid;
 				strcpy(msgbuf.mtext, "");
 				fprintf(o, "%s: [%i:%i] [DISPATCH] [PID: %i] LOC_PID: %i QUEUE: 2\n", filen, data->sysTime.seconds, data->sysTime.ns, data->proc[activeProcIndex].pid, data->proc[activeProcIndex].loc_pid);
-				msgsnd(toChildQueue, &msgbuf, sizeof(msgbuf), IPC_NOWAIT);
+				msgsnd(toChildQueue, &msgbuf, sizeof(msgbuf), IPC_NOWAIT); //wake the child
 			}
-			else if (isEmpty(queue3) == 0)
+			else if (isEmpty(queue3) == 0) //there is something in queue 3 but not in queue 1 or 0 or 2
 			{
-				activeProcIndex = FindLocPID(dequeue(queue3));
+				activeProcIndex = FindLocPID(dequeue(queue3)); //dequeue the proccess
 				msgbuf.mtype = data->proc[activeProcIndex].pid;
 				strcpy(msgbuf.mtext, "");
 				fprintf(o, "%s: [%i:%i] [DISPATCH] [PID: %i] LOC_PID: %i QUEUE: 3\n", filen, data->sysTime.seconds, data->sysTime.ns, data->proc[activeProcIndex].pid, data->proc[activeProcIndex].loc_pid);
-				msgsnd(toChildQueue, &msgbuf, sizeof(msgbuf), IPC_NOWAIT);
+				msgsnd(toChildQueue, &msgbuf, sizeof(msgbuf), IPC_NOWAIT); //wake the child
 			}
 
 			int schedCost = ((rand() % 9900) + 100);
-			AddTime(&(data->sysTime), schedCost);
-
+			AddTime(&(data->sysTime), schedCost); //simulate scheduling time
 			fprintf(o, "\t%s: [%i:%i] [SCHEDULER] [PID: %i] LOC_PID: %i COST TO SCHEDULE: %iNS\n", filen, data->sysTime.seconds, data->sysTime.ns, data->proc[activeProcIndex].pid, data->proc[activeProcIndex].loc_pid, schedCost);
 
-
-			procRunning = 1;
+			procRunning = 1; //signal that there is a proccess running
 		}
 
-		if ((pid = waitpid((pid_t)-1, &status, WNOHANG)) > 0) //if a PID is returned
+		if ((pid = waitpid((pid_t)-1, &status, WNOHANG)) > 0) //if a PID is returned meaning the child died
 		{
 			if (WIFEXITED(status))
 			{
@@ -602,13 +599,15 @@ void DoSharedWork()
 
 					int position = FindPID(pid);
 
-					data->proc[position].tWaitTime.seconds = data->proc[position].tSysTime.seconds;
+					/* Perform post-mortem statistical calculations */
+					data->proc[position].tWaitTime.seconds = data->proc[position].tSysTime.seconds; //capture current time as wait time
 					data->proc[position].tWaitTime.ns = data->proc[position].tSysTime.ns;
 
-					SubTime(&(data->proc[position].tWaitTime), &(data->proc[position].tCpuTime));
+					SubTime(&(data->proc[position].tWaitTime), &(data->proc[position].tCpuTime)); //obtain wait time by subtrcting blocked and cpuTime from time in the system
 					SubTime(&(data->proc[position].tWaitTime), &(data->proc[position].tBlockedTime));
+
 					printf("/**TIME STATS FOR LOC_PID: %i**/\n\tCPU Time: %i:%i\n\tWait Time: %i:%i\n\tBlocked Time: %i:%i\n\t--------------------------\n\n", data->proc[position].loc_pid, data->proc[position].tCpuTime.seconds, data->proc[position].tCpuTime.ns, data->proc[position].tWaitTime.seconds, data->proc[position].tWaitTime.ns, data->proc[position].tBlockedTime.seconds, data->proc[position].tBlockedTime.ns);
-					AddTimeLong(&(totalCpuTime), (((long)data->proc[position].tCpuTime.seconds * (long)1000000000)) + (long)(data->proc[position].tCpuTime.ns));
+					AddTimeLong(&(totalCpuTime), (((long)data->proc[position].tCpuTime.seconds * (long)1000000000)) + (long)(data->proc[position].tCpuTime.ns)); 
 					AddTimeLong(&(totalWaitTime), (((long)data->proc[position].tWaitTime.seconds) * (long)1000000000) + (long)(data->proc[position].tWaitTime.ns));
 					AddTimeLong(&(totalBlockedTime), ((long)(data->proc[position].tBlockedTime.seconds) * (long)1000000000) + (long)(data->proc[position].tBlockedTime.ns));
 
@@ -620,22 +619,26 @@ void DoSharedWork()
 
 		if (remainingExecs <= 0 && exitCount >= 100) //only get out of loop if we run out of execs or we have maxed out child count
 		{
-			totalTime.seconds = data->sysTime.seconds;
+			totalTime.seconds = data->sysTime.seconds; //after the simulation has finished, copy over the final clock values over to a local structure
 			totalTime.ns = data->sysTime.ns;
 			break;
 		}
 		fflush(stdout);
 	}
 
+	/* Print total times */
 	printf("/** TOTAL TIMES **/\n\tTotal Time: %i:%i\n\tCPU Time: %i:%i\n\tWait Time: %i:%i\n\tBlocked Time: %i:%i\n\t--------------------\n\n", totalTime.seconds, totalTime.ns, totalCpuTime.seconds, totalCpuTime.ns, totalWaitTime.seconds, totalWaitTime.ns, totalBlockedTime.seconds, totalBlockedTime.ns);
 	
+	/* Replace total times with average times instead */
 	AverageTime(&(totalTime), exitCount);
 	AverageTime(&(totalCpuTime), exitCount);
 	AverageTime(&(totalWaitTime), exitCount);
 	AverageTime(&(totalBlockedTime), exitCount);
 
+	/* Print average times */
 	printf("/** AVERAGE TIMES **/\n\tTotal Time: %i:%i\n\tCPU Time: %i:%i\n\tWait Time: %i:%i\n\tBlocked Time: %i:%i\n\t--------------------\n\n", totalTime.seconds, totalTime.ns, totalCpuTime.seconds, totalCpuTime.ns, totalWaitTime.seconds, totalWaitTime.ns, totalBlockedTime.seconds, totalBlockedTime.ns);
 
+	/* Wrap up the output file and detatch from shared memory items */
 	shmctl(ipcid, IPC_RMID, NULL);
 	msgctl(toChildQueue, IPC_RMID, NULL);
 	msgctl(toMasterQueue, IPC_RMID, NULL);
@@ -643,6 +646,7 @@ void DoSharedWork()
 	fclose(o);
 }
 
+/* Attach to queues incoming/outgoing */
 void QueueAttatch()
 {
 	key_t shmkey = ftok("shmsharemsg", 766);
@@ -650,16 +654,16 @@ void QueueAttatch()
 	if (shmkey == -1) //check if the input file exists
 	{
 		fflush(stdout);
-		perror("Error: Ftok failed");
+		perror("./oss: Error: Ftok failed");
 		return;
 	}
 
-	toChildQueue = msgget(shmkey, 0600 | IPC_CREAT);
+	toChildQueue = msgget(shmkey, 0600 | IPC_CREAT); //attach to child queue
 
 	if (toChildQueue == -1)
 	{
 		fflush(stdout);
-		perror("Error: toChildQueue creation failed");
+		perror("./oss: Error: toChildQueue creation failed");
 		return;
 	}
 
@@ -668,42 +672,44 @@ void QueueAttatch()
 	if (shmkey == -1) //check if the input file exists
 	{
 		fflush(stdout);
-		perror("Error: Ftok failed");
+		perror("./oss: Error: Ftok failed");
 		return;
 	}
 
-	toMasterQueue = msgget(shmkey, 0600 | IPC_CREAT);
+	toMasterQueue = msgget(shmkey, 0600 | IPC_CREAT); //attach to master queue
 
 	if (toMasterQueue == -1)
 	{
 		fflush(stdout);
-		perror("Error: toMasterQueue creation failed");
+		perror("./oss: Error: toMasterQueue creation failed");
 		return;
 	}
 }
 
+/* Program entry point */
 int main(int argc, int** argv)
 {
+	//alias for file name
 	filen = argv[0]; //shorthand for filename
 
 	if (SetupInterrupt() == -1) //Handler for SIGPROF failed
 	{
-		perror("Failed to setup Handler for SIGPROF");
+		perror("./oss: Failed to setup Handler for SIGPROF");
 		return 1;
 	}
 	if (SetupTimer() == -1) //timer failed
 	{
-		perror("Failed to setup ITIMER_PROF interval timer");
+		perror("./oss: Failed to setup ITIMER_PROF interval timer");
 		return 1;
 	}
 
-	o = fopen("output.log", "w");
+	o = fopen("./oss: output.log", "w"); //open output file
 
 	ShmAttatch(); //attach to shared mem
-	QueueAttatch();
-	SweepProcBlocks();
-	signal(SIGINT, Handler);
-	DoSharedWork();
+	QueueAttatch(); //attach to queues
+	SweepProcBlocks(); //reset all proc blocks
+	signal(SIGINT, Handler); //setup handler for CTRL-C
+	DoSharedWork(); //fattest function west of the mississippi
 
 	return 0;
 }
