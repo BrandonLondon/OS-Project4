@@ -6,12 +6,13 @@
 #include <sys/ipc.h> 
 #include <sys/shm.h> 
 #include <errno.h>
-#include "shared.h"
 #include <signal.h>
 #include <sys/time.h>
-#include "string.h"
 #include <sys/types.h>
 #include <sys/msg.h>
+#include "queue.h"
+#include "shared.h"
+#include "string.h"
 
 /*
 *	Author: Vasyl Onufriyev
