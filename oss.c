@@ -300,6 +300,7 @@ void DoSharedWork()
 	Time totalWaitTime = { 0, 0 };
 	Time totalBlockedTime = { 0,0 };
 	Time totalTime = { 0,0 };
+	Time idleTime = {0, 0};
 
 	/* Create queues */
 	struct Queue* queue0 = createQueue(MAX_PROCS); //Queue of local PIDS (fake/emulated pids)
@@ -518,7 +519,10 @@ void DoSharedWork()
 		if (isEmpty(queueBlock) == 0)
 		{
 			if (procRunning == 0)
-				AddTime(&(data->sysTime), 5000000);	//No process is running. Hyperspeed until the next process is ready!			
+			{
+				AddTime(&(idleTime), 5000000);
+				AddTime(&(data->sysTime), 5000000);	//No process is running. Hyperspeed until the next process is ready!	
+			}		
 
 			int t;
 			/* Loop through all blocked entries, return them to mainstream quques if unblocked, else keep them blocked */
@@ -635,15 +639,18 @@ void DoSharedWork()
 
 	/* Print total times */
 	printf("/** TOTAL TIMES **/\n\tTotal Time: %i:%i\n\tCPU Time: %i:%i\n\tWait Time: %i:%i\n\tBlocked Time: %i:%i\n\t--------------------\n\n", totalTime.seconds, totalTime.ns, totalCpuTime.seconds, totalCpuTime.ns, totalWaitTime.seconds, totalWaitTime.ns, totalBlockedTime.seconds, totalBlockedTime.ns);
-	
+	printf("/* System Idle Time %i:%i\n\n*/", idleTime.seconds, idleTime.ns);
+
 	/* Replace total times with average times instead */
 	AverageTime(&(totalTime), exitCount);
 	AverageTime(&(totalCpuTime), exitCount);
 	AverageTime(&(totalWaitTime), exitCount);
 	AverageTime(&(totalBlockedTime), exitCount);
+	AverageTime(&(idleTime), exitCount);
 
 	/* Print average times */
 	printf("/** AVERAGE TIMES **/\n\tTotal Time: %i:%i\n\tCPU Time: %i:%i\n\tWait Time: %i:%i\n\tBlocked Time: %i:%i\n\t--------------------\n\n", totalTime.seconds, totalTime.ns, totalCpuTime.seconds, totalCpuTime.ns, totalWaitTime.seconds, totalWaitTime.ns, totalBlockedTime.seconds, totalBlockedTime.ns);
+	printf("/* Average System Idle Time %i:%i\n\n*/", idleTime.seconds, idleTime.ns);
 
 	/* Wrap up the output file and detatch from shared memory items */
 	shmctl(ipcid, IPC_RMID, NULL);
