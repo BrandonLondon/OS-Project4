@@ -37,7 +37,7 @@ const int MAX_TIME_BETWEEN_NEW_PROCS_SEC = 1;
 const int SCHEDULER_CLOCK_ADD_INC = 10000;
 
 /* Queue and Realtime constants */
-const int CHANCE_TO_BE_REALTIME = 50;
+const int CHANCE_TO_BE_REALTIME = 80;
 const int QUEUE_BASE_TIME = 10; //in ms
 
 /* Create prototypes for used functions*/
@@ -773,7 +773,7 @@ int main(int argc, int** argv)
 			return;
 		case 'n': //max # of children
 			childcount = atoi(optarg);
-			if(childcount > 20 || childcount < 0) //if 0  > n > 20 
+			if(childcount > 19 || childcount < 0) //if 0  > n > 20 
 			{
 				printf("%s: Max -n is 20. Must be > 0 Aborting.\n", argv[0]);
 				return -1;					
