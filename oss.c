@@ -250,7 +250,7 @@ int FindEmptyProcBlock()
 void SweepProcBlocks()
 {
 	int i;
-	for (i = 0; i < childCount; i++)
+	for (i = 0; i < MAX_PROCS; i++)
 		data->proc[i].pid = -1;
 }
 
@@ -789,8 +789,6 @@ int main(int argc, int** argv)
 			return;
 		}
 	}
-
-	data->childCount = childCount;
 
 	o = fopen("./oss: output.log", "w"); //open output file
 
