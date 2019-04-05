@@ -16,12 +16,14 @@ There are two tiers of processes:
 
 1. Realtime - Run in the highest queue always, highest priority, have highest chance of termination (2x rate of user processes)
 2. User - Lower priority than realtime, can get shifted to queues 1 - 3
-
+```c
 • Whenever a process terminates, the time used before termination is added to the clock and the child terminates.
+
 • Whenever a process uses all time, its queue level quantum is added to the system clock 
+
 • Whenever a process uses part of its time, it is assumed it is doing an IO operation and is placed in a blocked queue until such a time that it deems it wishes to wake up, then signals
 the master to reschedule it.
-
+```
 Details of each processes runtimes, block time, etc, is tracked in the process block.
 
 end of execution statistics are displayed on the screen. Both total and average times are shown. Blocking times may be many times longer than the "total time" statistic. This is because blocked processes
