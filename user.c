@@ -49,7 +49,7 @@ struct {
 int FindPID(int pid)
 {
 	int i;
-	for (i = 0; i < MAX_PROCS; i++)
+	for (i = 0; i < data->childCount; i++)
 		if (data->proc[i].pid == pid)
 			return i;
 	return -1;

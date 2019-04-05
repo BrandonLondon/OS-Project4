@@ -34,6 +34,7 @@ typedef struct {
 typedef struct {
 	ProcBlock proc[MAX_PROCS]; //process table
 	Time sysTime; //system clock time
+	int childcount;
 } Shared;
 
 #define SHARED_H
