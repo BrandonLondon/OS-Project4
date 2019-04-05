@@ -27,7 +27,7 @@ int toChildQueue; //queue for communicating to child from master
 int toMasterQueue; //queue for communicating from child to master
 int locpidcnt = 0; //keeps track of current local PID for new proccesses
 char* filen; //name of this executable
-int childcount = 19; //Max children concurrent
+int childCount = 19; //Max children concurrent
 
 FILE* o;  //output log file pointer
 
@@ -150,7 +150,7 @@ void Handler(int signal)
 	fflush(stdout); //make sure that messages are output correctly before we start terminating things
 
 	int i;
-	for (i = 0; i < childcount; i++) //loop thorough the proccess table and issue a termination signal to all unkilled proccess/children
+	for (i = 0; i < childCount; i++) //loop thorough the proccess table and issue a termination signal to all unkilled proccess/children
 		if (data->proc[i].pid != -1)
 			kill(data->proc[i].pid, SIGTERM);
 
@@ -159,6 +159,8 @@ void Handler(int signal)
 	shmctl(ipcid, IPC_RMID, NULL); //free shared mem
 	msgctl(toChildQueue, IPC_RMID, NULL); //free queues
 	msgctl(toMasterQueue, IPC_RMID, NULL);
+
+	printf("%s: Termination signal caught. Killed processes and killing self now...goodbye...\n\n", filen);
 
 	kill(getpid(), SIGTERM); //kill self
 }
@@ -235,7 +237,7 @@ int SetupTimer()
 int FindEmptyProcBlock()
 {
 	int i;
-	for (i = 0; i < childcount; i++)
+	for (i = 0; i < childCount; i++)
 	{
 		if (data->proc[i].pid == -1)
 			return i; //return proccess table position of empty
@@ -248,7 +250,7 @@ int FindEmptyProcBlock()
 void SweepProcBlocks()
 {
 	int i;
-	for (i = 0; i < childcount; i++)
+	for (i = 0; i < childCount; i++)
 		data->proc[i].pid = -1;
 }
 
@@ -256,7 +258,7 @@ void SweepProcBlocks()
 int FindPID(int pid)
 {
 	int i;
-	for (i = 0; i < childcount; i++)
+	for (i = 0; i < childCount; i++)
 		if (data->proc[i].pid == pid)
 			return i;
 	return -1;
@@ -266,7 +268,7 @@ int FindPID(int pid)
 int FindLocPID(int pid)
 {
 	int i;
-	for (i = 0; i < childcount; i++)
+	for (i = 0; i < childCount; i++)
 		if (data->proc[i].loc_pid == pid)
 			return i;
 	return -1;
@@ -304,12 +306,12 @@ void DoSharedWork()
 	Time idleTime = {0, 0};
 
 	/* Create queues */
-	struct Queue* queue0 = createQueue(childcount); //Queue of local PIDS (fake/emulated pids)
-	struct Queue* queue1 = createQueue(childcount); //Queue of local PIDS (fake/emulated pids)
-	struct Queue* queue2 = createQueue(childcount); //Queue of local PIDS (fake/emulated pids)
-	struct Queue* queue3 = createQueue(childcount); //Queue of local PIDS (fake/emulated pids)
+	struct Queue* queue0 = createQueue(childCount); //Queue of local PIDS (fake/emulated pids)
+	struct Queue* queue1 = createQueue(childCount); //Queue of local PIDS (fake/emulated pids)
+	struct Queue* queue2 = createQueue(childCount); //Queue of local PIDS (fake/emulated pids)
+	struct Queue* queue3 = createQueue(childCount); //Queue of local PIDS (fake/emulated pids)
 
-	struct Queue* queueBlock = createQueue(childcount);
+	struct Queue* queueBlock = createQueue(childCount);
 
 	int queueCost0 = QUEUE_BASE_TIME * 1000000;
 	int queueCost1 = QUEUE_BASE_TIME * 2 * 1000000;
@@ -322,13 +324,14 @@ void DoSharedWork()
 	srand(time(0)); //set random seed
 
 	while (1) {
-		AddTime(&(data->sysTime), SCHEDULER_CLOCK_ADD_INC);
+		AddTime(&(data->sysTime), SCHEDULER_CLOCK_ADD_INC); //increment clock between tasks to advance the clock a little
+		AddTime(&(idleTime), SCHEDULER_CLOCK_ADD_INC);
 
 		pid_t pid; //pid temp
 		int usertracker = -1; //updated by userready to the position of ready struct to be launched
 
 		/* Only executes when there is a proccess ready to be launched, given the time is right for exec, there is room in the proc table, annd there are execs remaining */
-		if (remainingExecs > 0 && activeProcs < childcount && (data->sysTime.seconds >= nextExec.seconds) && (data->sysTime.ns >= nextExec.ns)) 
+		if (remainingExecs > 0 && activeProcs < childCount && (data->sysTime.seconds >= nextExec.seconds) && (data->sysTime.ns >= nextExec.ns)) 
 		{
 			pid = fork(); //the mircle of proccess creation
 
@@ -769,13 +772,13 @@ int main(int argc, int** argv)
 		case 'h': //show help menu
 			printf("\t%s Help Menu\n\
 		\t-h : show help dialog \n\
-		\t-n [count] : max proccesses at the same time. Default: 19\n\n");
+		\t-n [count] : max proccesses at the same time. Default: 19\n\n", filen);
 			return;
 		case 'n': //max # of children
-			childcount = atoi(optarg);
-			if(childcount > 19 || childcount < 0) //if 0  > n > 20 
+			childCount = atoi(optarg);
+			if(childCount > 19 || childCount < 0) //if 0  > n > 20 
 			{
-				printf("%s: Max -n is 20. Must be > 0 Aborting.\n", argv[0]);
+				printf("%s: Max -n is 19. Must be > 0 Aborting.\n", argv[0]);
 				return -1;					
 			}
 
@@ -786,6 +789,8 @@ int main(int argc, int** argv)
 			return;
 		}
 	}
+
+	data->childCount = childCount;
 
 	o = fopen("./oss: output.log", "w"); //open output file
 
